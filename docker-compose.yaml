@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    secrets:
+      - postgres-password
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres:/docker-entrypoint-initdb.d/
+  pgAdmin:
+    image: dpage/pgadmin4
+    ports:
+      - "5050:80"
+    secrets:
+      - pgadmin-password
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@company.tdl
+      PGADMIN_DEFAULT_PASSWORD_FILE: /run/secrets/pgadmin-password
+    volumes:
+      - pgAdmin-data:/var/lib/pgadmin
+  grafana:
+    image: grafana/grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+
+volumes:
+  postgres-data:
+  pgAdmin-data:
+  grafana-data:
+
+secrets:
+  postgres-password:
+    file: ./secrets/postgres-pass.txt
+  pgadmin-password:
+    file: ./secrets/pgadmin-pass.txt
