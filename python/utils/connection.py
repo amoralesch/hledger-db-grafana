@@ -54,6 +54,10 @@ class Connection:
         sql = f'truncate table {table}'
         self.cursor.execute(sql)
 
+    def delete_table_from_date(self, table: str, date: str) -> None:
+        sql = f"delete from {table} where date >= '{date}'"
+        self.cursor.execute(sql)
+
     def bulk_insert(self, table, fields, params):
         sql = (
             f'insert into {table} '
@@ -63,7 +67,11 @@ class Connection:
 
         execute_values(self.cursor, sql, params)
 
-    def add_fx_rates(self, fx_rates: dict[str, dict[tuple[str, str], Decimal]]):
+    def add_fx_rates(
+            self,
+            date: str,
+            fx_rates: dict[str, dict[tuple[str, str], Decimal]]
+            ) -> None:
         # fx_rates = {
         #   timestamp => {
         #     (currency, target_currency) => rate
@@ -78,5 +86,9 @@ class Connection:
             for currencies, rate in records.items()
         ]
 
-        self.delete_table(table)
+        if date is None:
+            self.delete_table(table)
+        else:
+            self.delete_table_from_date(table, date)
+
         self.bulk_insert(table, fields, params)

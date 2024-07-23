@@ -2,6 +2,8 @@ from decimal import Decimal
 from utils.connection import Connection
 from utils.hledger import hledger_prices
 
+START_DATE='2024-01-01'
+
 
 def split_price(price: str) -> tuple[str, str, str, str, str]:
     fields = price.replace('"', '').split()
@@ -20,7 +22,9 @@ def split_price(price: str) -> tuple[str, str, str, str, str]:
         )
 
 
-def extract_from_hledger_format(raw_prices: list[str]) -> dict[str, dict[tuple[str, str], Decimal]]:
+def extract_from_hledger_format(
+        raw_prices: list[str]
+        ) -> dict[str, dict[tuple[str, str], Decimal]]:
     # {
     #   timestamp => {
     #     (currency, target_currency) => rate
@@ -46,19 +50,36 @@ def extract_from_hledger_format(raw_prices: list[str]) -> dict[str, dict[tuple[s
     return results
 
 
-def calculate_fx_rates(raw_prices: list[str]) -> dict[str, dict[tuple[str, str], Decimal]]:
+def calculate_fx_rates(
+        raw_prices: list[str]
+        ) -> dict[str, dict[tuple[str, str], Decimal]]:
     explicit_rates = extract_from_hledger_format(raw_prices)
 
     return explicit_rates
 
 
-def run_process():
+def filter_rates(
+        date: str,
+        rates: dict[str, dict[tuple[str, str], Decimal]]
+        ) -> dict[str, dict[tuple[str, str], Decimal]]:
+    if date is None:
+        return rates
+
+    keys = [a_date for a_date, _ in rates.items() if a_date < date]
+    for x in keys:
+        del rates[x]
+
+    return rates
+
+
+def run_process(date: str = None):
     raw_prices = hledger_prices()
     fx_rates = calculate_fx_rates(raw_prices)
+    rates = filter_rates(date, fx_rates)
 
     with Connection() as connection:
-        connection.add_fx_rates(fx_rates)
+        connection.add_fx_rates(date, rates)
 
 
 if __name__ == '__main__':
-    run_process()
+    run_process(START_DATE)
