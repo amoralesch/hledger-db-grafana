@@ -1,40 +1,16 @@
 from decimal import Decimal
-import subprocess
 from utils.connection import Connection
-
-MAIN_LEDGER = "../ledger/hledger.all.journal"
-
-
-def hledger_command(args):
-    """Run a hledger command, throw an error if it fails, and return the
-    stdout.
-    """
-    print(f'Running hledger command: {args[0]}')
-
-    ledger_file = MAIN_LEDGER
-    real_args = [
-        "hledger",
-        "-f",
-        ledger_file
-    ]
-    real_args.extend(args)
-    proc = subprocess.run(real_args, check=True, capture_output=True)
-
-    return proc.stdout.decode("utf-8")
-
-
-def hledger_prices() -> list[str]:
-    args = ["prices", '--infer-market-prices']
-
-    return hledger_command(args).splitlines()
+from utils.hledger import hledger_prices
 
 
 def split_price(price: str) -> tuple[str, str, str, str, str]:
     fields = price.replace('"', '').split()
 
     if len(fields) == 5:
+        # P 2000-01-01 USD 1.00 USD
         return fields
     else:
+        # P 2000-01-01 "USD *" 2.00 USD
         return (
             fields[0],
             fields[1],
