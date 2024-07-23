@@ -9,5 +9,7 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r ./python/requirements.txt
 
+python3 ./python/fx_rates.py
+
 # all is good, deactivate virtual environment
 deactivate
