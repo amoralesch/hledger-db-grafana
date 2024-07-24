@@ -5,10 +5,9 @@ from utils.connection import Connection
 from utils.hledger import prices, current_commodites
 
 DATE_FAR_FUTURE = '9999-12-31'
-START_DATE=None #'2024-01-01'
 
 
-def daterange(start: date, end: date, step=timedelta(1)):
+def date_range(start: date, end: date, step=timedelta(1)):
     curr = start
 
     while curr <= end:
@@ -85,7 +84,7 @@ def project_rates(
     previous_rates = {}
     projected_rates = {}
 
-    for d in daterange(start_date, end_date):
+    for d in date_range(start_date, end_date):
         date = d.strftime('%Y-%m-%d')
         rates_of_the_day = explicit_rates.get(date)
 
@@ -201,6 +200,10 @@ def calculate_fx_rates(
     projected_rates = project_rates(date, explicit_rates, last_day_currencies)
     rates = generate_implicit_rates(projected_rates)
 
+    # call twice, so that extra relations are created
+    # i.e. AAA -> BBB -> CCC -> DDD = AAA -> DDD
+    rates = generate_implicit_rates(rates)
+
     return rates
 
 
@@ -228,4 +231,5 @@ def run_process(date: str = None):
 
 
 if __name__ == '__main__':
-    run_process(START_DATE)
+    # run_process()
+    run_process(date="2024-07-20")
