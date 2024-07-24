@@ -50,12 +50,12 @@ class Connection:
     def __exit__(self, *args):
         self.conn.commit()
 
-    def delete_table(self, table: str) -> None:
-        sql = f'truncate table {table}'
-        self.cursor.execute(sql)
+    def delete_table_from_date(self, table: str, date: str = None) -> None:
+        if date is None:
+            sql = f'truncate table {table}'
+        else:
+            sql = f"delete from {table} where date >= '{date}'"
 
-    def delete_table_from_date(self, table: str, date: str) -> None:
-        sql = f"delete from {table} where date >= '{date}'"
         self.cursor.execute(sql)
 
     def bulk_insert(self, table, fields, params):
@@ -86,9 +86,5 @@ class Connection:
             for currencies, rate in records.items()
         ]
 
-        if date is None:
-            self.delete_table(table)
-        else:
-            self.delete_table_from_date(table, date)
-
+        self.delete_table_from_date(table, date)
         self.bulk_insert(table, fields, params)
