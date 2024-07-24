@@ -5,6 +5,11 @@ from utils.connection import Connection
 from utils.hledger import prices, current_commodites
 
 DATE_FAR_FUTURE = '9999-12-31'
+MAIN_CURRENCIES = [
+    'USD',
+    'MXN',
+    'JPY'
+]
 
 
 def date_range(start: date, end: date, step=timedelta(1)):
@@ -148,7 +153,7 @@ def find_last_day_currencies(
 
 
 def generate_implicit_rates(
-        explicit_rates: dict[str, dict[tuple[str, str], Decimal]]
+        all_explicit_rates: dict[str, dict[tuple[str, str], Decimal]]
         ) -> dict[str, dict[tuple[str, str], Decimal]]:
     # explicit_rates = {
     #   timestamp => {
@@ -157,36 +162,38 @@ def generate_implicit_rates(
     # }
     rates = {}
 
-    print(f'Total explicit rate days: {len(explicit_rates.keys())}')
-    for day in sorted(explicit_rates.keys()):
-        explicit_rates_of_the_day = explicit_rates.get(day)
-        rates_for_the_day = {}
+    for day in sorted(all_explicit_rates.keys()):
+        explicit_rates = all_explicit_rates.get(day)
+        all_rates_day = {}
 
-        print(f'Total explicit rate days for {day}: {len(explicit_rates_of_the_day)}')
-        for explicit_rate_of_the_day in explicit_rates_of_the_day:
-            source_currency = explicit_rate_of_the_day[0]
-            middle_currency = explicit_rate_of_the_day[1]
-            middle_rate = explicit_rates_of_the_day.get(explicit_rate_of_the_day)
+        for explicit in explicit_rates:
+            source_currency = explicit[0]
+            middle_currency = explicit[1]
+            middle_rate = explicit_rates.get(explicit)
 
-            rates_for_the_day[explicit_rate_of_the_day] = middle_rate
+            all_rates_day[explicit] = middle_rate
 
-            for other_rates_in_the_day in explicit_rates_of_the_day:
+            for other_rates_in_the_day in explicit_rates:
                 other_middle_currency = other_rates_in_the_day[0]
                 target_currency = other_rates_in_the_day[1]
-
-                if source_currency == target_currency or middle_currency != other_middle_currency:
-                    continue
-
                 the_key = (source_currency, target_currency)
 
-                if the_key in rates_for_the_day:
+                same_currency = source_currency == target_currency
+                not_related = middle_currency != other_middle_currency
+                can_ignore = (
+                    source_currency not in MAIN_CURRENCIES and
+                    target_currency not in MAIN_CURRENCIES
+                )
+                already_known = the_key in all_rates_day
+
+                if same_currency or not_related or can_ignore or already_known:
                     continue
 
-                other_rate = explicit_rates_of_the_day.get(other_rates_in_the_day)
+                other_rate = explicit_rates.get(other_rates_in_the_day)
                 new_rate = middle_rate * other_rate
-                rates_for_the_day[the_key] = new_rate
+                all_rates_day[the_key] = new_rate
 
-        rates[day] = rates_for_the_day
+        rates[day] = all_rates_day
 
     return rates
 
@@ -198,10 +205,14 @@ def calculate_fx_rates(
     explicit_rates = extract_from_hledger(raw_prices)
     last_day_currencies = find_last_day_currencies(explicit_rates)
     projected_rates = project_rates(date, explicit_rates, last_day_currencies)
+
+    # first call:
+    # A -> B, B -> C, C -> D => A -> C, B -> D
+    # it misses A -> D
     rates = generate_implicit_rates(projected_rates)
 
-    # call twice, so that extra relations are created
-    # i.e. AAA -> BBB -> CCC -> DDD = AAA -> DDD
+    # second call:
+    # it adds A -> D
     rates = generate_implicit_rates(rates)
 
     return rates
@@ -231,5 +242,5 @@ def run_process(date: str = None):
 
 
 if __name__ == '__main__':
-    # run_process()
-    run_process(date="2024-07-20")
+    run_process()
+    # run_process(date="2024-07-20")
