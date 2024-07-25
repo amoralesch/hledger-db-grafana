@@ -1,3 +1,8 @@
+create table hledger.assets_classification (
+    account varchar(100) not null,
+    classification varchar(20) not null
+);
+
 create table hledger.balance_to_date (
     date timestamp not null,
     balance numeric not null,
