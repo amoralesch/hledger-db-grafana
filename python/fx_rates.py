@@ -233,7 +233,7 @@ def filter_rates(
     return rates
 
 
-def run_process(date: str = None):
+def run_process(date: str = None) -> None:
     raw_prices = prices()
     rates = calculate_fx_rates(date, raw_prices)
 

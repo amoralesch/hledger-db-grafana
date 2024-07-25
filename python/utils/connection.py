@@ -67,6 +67,28 @@ class Connection:
 
         execute_values(self.cursor, sql, params)
 
+    def add_balances(
+            self,
+            date: str,
+            balances: dict[str, dict[tuple[str, str], Decimal]]
+            ) -> None:
+        # balances = {
+        #   timestamp => {
+        #     (currency, target_currency) => balance
+        #   }
+        # }
+
+        table = 'balance_to_date'
+        fields = ('date', 'balance', 'account', 'currency')
+        params = [
+            (timestamp, balance, currencies[0], currencies[1])
+            for timestamp, records in balances.items()
+            for currencies, balance in records.items()
+        ]
+
+        self.delete_table_from_date(table, date)
+        self.bulk_insert(table, fields, params)
+
     def add_fx_rates(
             self,
             date: str,
