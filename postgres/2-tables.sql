@@ -11,3 +11,8 @@ create table hledger.fx_rate (
     currency varchar(20) not null,
     target_currency varchar(20) not null
 );
+
+create table hledger.main_commodities (
+    currency varchar(20) not null,
+    name varchar(100) not null
+);
