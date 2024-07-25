@@ -1,3 +1,18 @@
+from datetime import timedelta, date
+
+
+def date_range(start: date, end: date, step=timedelta(1)):
+    """
+    Returns all the dates between `start` and `end` inclusive.
+    By default, step is one day, but can be changed.
+    """
+    curr = start
+
+    while curr <= end:
+        yield curr
+        curr += step
+
+
 def filter_dates(
         date: str,
         some_list: dict[str, any]

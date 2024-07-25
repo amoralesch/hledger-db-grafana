@@ -1,7 +1,8 @@
 from decimal import Decimal
+from datetime import datetime
 from utils.connection import Connection
 from utils.hledger import raw_postings
-from utils.utils import filter_dates
+from utils.utils import filter_dates, date_range
 
 
 def preprocess_group_credits_debits(
@@ -65,9 +66,16 @@ def running_totals(
 
     current = {}
     out = {}
+    start_date = datetime.strptime(
+        min(deltas_by_timestamp.keys()),
+        '%Y-%m-%d').date()
+    end_date = datetime.now().date()
 
-    for timestamp in sorted(deltas_by_timestamp.keys()):
-        for k, delta in deltas_by_timestamp[timestamp].items():
+    for d in date_range(start_date, end_date):
+        timestamp = d.strftime('%Y-%m-%d')
+        today_deltas = deltas_by_timestamp.get(timestamp, {})
+
+        for k, delta in today_deltas.items():
             current[k] = current.get(k, 0) + delta
 
         out[timestamp] = {k: v for k, v in current.items()}

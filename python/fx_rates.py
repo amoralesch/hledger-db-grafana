@@ -1,8 +1,9 @@
 import copy
 from decimal import Decimal
-from datetime import datetime, timedelta, date
+from datetime import datetime
 from utils.connection import Connection
 from utils.hledger import prices, current_commodites
+from utils.utils import date_range
 
 DATE_FAR_FUTURE = '9999-12-31'
 MAIN_CURRENCIES = [
@@ -10,14 +11,6 @@ MAIN_CURRENCIES = [
     'MXN',
     'JPY'
 ]
-
-
-def date_range(start: date, end: date, step=timedelta(1)):
-    curr = start
-
-    while curr <= end:
-        yield curr
-        curr += step
 
 
 def split_price(price: str) -> tuple[str, str, str, str, str]:
