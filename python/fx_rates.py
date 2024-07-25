@@ -3,6 +3,7 @@ from decimal import Decimal
 from datetime import datetime, timedelta, date
 from utils.connection import Connection
 from utils.hledger import prices, current_commodites
+from utils.utils import filter_dates
 
 DATE_FAR_FUTURE = '9999-12-31'
 MAIN_CURRENCIES = [
@@ -214,21 +215,6 @@ def calculate_fx_rates(
     # second call:
     # it adds A -> D
     rates = generate_implicit_rates(rates)
-
-    return rates
-
-
-def filter_rates(
-        date: str,
-        rates: dict[str, dict[tuple[str, str], Decimal]]
-        ) -> dict[str, dict[tuple[str, str], Decimal]]:
-    if date is None:
-        return rates
-
-    keys = [a_date for a_date, _ in rates.items() if a_date < date]
-
-    for x in keys:
-        del rates[x]
 
     return rates
 
