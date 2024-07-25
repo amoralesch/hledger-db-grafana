@@ -1,6 +1,7 @@
 from decimal import Decimal
 from utils.connection import Connection
 from utils.hledger import raw_postings
+from utils.utils import filter_dates
 
 
 def preprocess_group_credits_debits(
@@ -118,33 +119,15 @@ def get_credit_debits(
     return preprocess_group_credits_debits(postings)
 
 
-def filter_balances(
-        date: str,
-        all_balances: dict[str, dict[tuple[str, str], Decimal]]
-        ) -> dict[str, dict[tuple[str, str], Decimal]]:
-    if date is None:
-        return all_balances
-
-    keys = [
-        a_date
-        for a_date, _ in all_balances.items()
-        if a_date < date]
-
-    for x in keys:
-        del all_balances[x]
-
-    return all_balances
-
-
 def run_process(date: str = None) -> None:
     credits_debits = get_credit_debits()
     all_balances = calculate_balances(credits_debits)
-    filtered_balances = filter_balances(date, all_balances)
+    filter_dates(date, all_balances)
 
     with Connection() as connection:
-        connection.add_balances(date, filtered_balances)
+        connection.add_balances(date, all_balances)
 
 
 if __name__ == '__main__':
     run_process()
-    # run_process(date='2024-07-20')
+    # run_process(date='2024-01-01')

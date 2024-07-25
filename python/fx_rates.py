@@ -3,7 +3,6 @@ from decimal import Decimal
 from datetime import datetime, timedelta, date
 from utils.connection import Connection
 from utils.hledger import prices, current_commodites
-from utils.utils import filter_dates
 
 DATE_FAR_FUTURE = '9999-12-31'
 MAIN_CURRENCIES = [
@@ -229,4 +228,4 @@ def run_process(date: str = None) -> None:
 
 if __name__ == '__main__':
     run_process()
-    # run_process(date="2024-07-20")
+    # run_process(date="2024-01-01")
