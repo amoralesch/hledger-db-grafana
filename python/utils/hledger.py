@@ -1,3 +1,5 @@
+import csv
+import io
 import subprocess
 
 MAIN_LEDGER = "../ledger/hledger.all.journal"
@@ -29,7 +31,7 @@ def prices() -> list[str]:
     return hledger_command(args).splitlines()
 
 
-def current_commodites():
+def current_commodites() -> list[str]:
     """
     Return a list of commodities currently active (i.e. in use today)
     """
@@ -48,3 +50,21 @@ def current_commodites():
             commodities.append(line[start:end])
 
     return set(commodities)
+
+
+def raw_postings() -> list[dict[str, str]]:
+    # [
+    #   {
+    #     'field_name': 'value',
+    #     ...
+    #   }
+    # ]
+    return list(
+        csv.DictReader(
+            io.StringIO(
+                hledger_command(
+                    ["print", "-O", "csv"]
+                )
+            )
+        )
+    )
