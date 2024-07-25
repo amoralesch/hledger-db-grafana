@@ -95,3 +95,15 @@ group by
     a.date,
     a.account,
     b.target_currency;
+
+create view hledger.net_worth as
+select
+    date,
+    currency,
+    sum(balance) as net_worth
+from hledger.balance_to_date_converted
+where
+    account in ('Assets', 'Liabilities', 'Transfer')
+group by
+    date,
+    currency;
