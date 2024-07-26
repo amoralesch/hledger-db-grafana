@@ -96,6 +96,21 @@ group by
     a.account,
     b.target_currency;
 
+create view hledger.daily_delta_converted as
+select
+    a.date,
+    sum(a.balance * b.rate) as balance,
+    a.account,
+    b.target_currency as currency
+from hledger.daily_delta a
+join hledger.fx_rate b on
+    a.date = b.date and
+    a.currency = b.currency
+group by
+    a.date,
+    a.account,
+    b.target_currency;
+
 create view hledger.net_worth as
 select
     date,

@@ -52,19 +52,17 @@ def current_commodites() -> list[str]:
     return set(commodities)
 
 
-def raw_postings() -> list[dict[str, str]]:
+def raw_postings(date: str = None) -> list[dict[str, str]]:
     # [
     #   {
     #     'field_name': 'value',
     #     ...
     #   }
     # ]
-    return list(
-        csv.DictReader(
-            io.StringIO(
-                hledger_command(
-                    ["print", "-O", "csv"]
-                )
-            )
-        )
-    )
+
+    args = ["print", "-O", "csv"]
+
+    if date is not None:
+        args.extend(['-b', date])
+
+    return list(csv.DictReader(io.StringIO(hledger_command(args))))
