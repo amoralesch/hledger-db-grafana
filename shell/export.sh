@@ -11,6 +11,7 @@ pip install -r ./python/requirements.txt
 
 python3 ./python/fx_rates.py
 python3 ./python/balance_to_date.py
+python3 ./python/daily_deltas.py
 
 # all is good, deactivate virtual environment
 deactivate

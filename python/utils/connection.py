@@ -81,9 +81,31 @@ class Connection:
         table = 'balance_to_date'
         fields = ('date', 'balance', 'account', 'currency')
         params = [
-            (timestamp, balance, currencies[0], currencies[1])
+            (timestamp, balance, key[0], key[1])
             for timestamp, records in balances.items()
-            for currencies, balance in records.items()
+            for key, balance in records.items()
+        ]
+
+        self.delete_table_from_date(table, date)
+        self.bulk_insert(table, fields, params)
+
+    def add_daily_deltas(
+            self,
+            date: str,
+            deltas: dict[str, dict[tuple[str, str], Decimal]]
+            ) -> None:
+        # deltas = {
+        #   timestamp => {
+        #     (currency, target_currency) => delta
+        #   }
+        # }
+
+        table = 'daily_delta'
+        fields = ('date', 'balance', 'account', 'currency')
+        params = [
+            (timestamp, delta, key[0], key[1])
+            for timestamp, records in deltas.items()
+            for key, delta in records.items()
         ]
 
         self.delete_table_from_date(table, date)
