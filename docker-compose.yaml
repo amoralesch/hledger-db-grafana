@@ -16,6 +16,8 @@ services:
     image: dpage/pgadmin4
     ports:
       - "5050:80"
+    depends_on:
+      - postgres
     secrets:
       - pgadmin-password
     environment:
@@ -26,10 +28,16 @@ services:
   grafana:
     image: grafana/grafana
     restart: unless-stopped
+    depends_on:
+      - postgres
     ports:
       - "3000:3000"
     volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
       - grafana-data:/var/lib/grafana
+    environment:
+      GF_INSTALL_PLUGINS: marcusolsson-treemap-panel
 
 volumes:
   postgres-data:
