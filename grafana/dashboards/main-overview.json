@@ -99,7 +99,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\n\ta.date,\n\tsum(a.balance) as \"Net Worth\"\nfrom hledger.balance_to_date_converted a\nwhere \n\ta.account in (\n\t\t'Assets',\n\t\t'Liabilities',\n\t\t'Transfer'\n\t) and\n\ta.currency = '${commodity}'\ngroup by\n\ta.date\n",
+          "rawSql": "select\n\ta.date,\n\ta.net_worth as \"Net Worth\"\nfrom hledger.net_worth a\nwhere \n\ta.currency = '${commodity}'\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -202,7 +202,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\n\ta.date,\n\ta.balance / b.daily_expense as short_runaway\nfrom (\n\tselect\n\t\ta.date,\n\t\tsum(a.balance * c.rate) as balance\n\tfrom hledger.balance_to_date_converted a \n\tjoin hledger.assets_classification b on\n\t\ta.account = b.account and\n\t\tb.classification in (\n\t\t\t'Cash',  \n\t\t\t'Savings'\n\t\t) \n\tjoin hledger.fx_rate c on\n\t\ta.date = c.date and \n\t\ta.currency = c.currency\n\twhere\n\t\tc.target_currency = '${commodity}'\n\tgroup by\n\t\ta.date\t\n) a\njoin hledger.average_daily_expenses b on\n\ta.date = b.date\nwhere\n\tb.currency = '${commodity}' and\n\tb.daily_expense is not null\n",
+          "rawSql": "select\n\ta.date,\n\ta.balance / b.daily_expense as short_runaway\nfrom (\n\tselect\n\t\ta.date,\n\t\tsum(a.balance) as balance\n\tfrom hledger.balance_to_date_converted a \n\tjoin hledger.assets_classification b on\n\t\ta.account = b.account and\n\t\tb.classification in (\n\t\t\t'Cash',  \n\t\t\t'Savings'\n\t\t) \n\twhere\n\t\ta.currency = '${commodity}'\n\tgroup by\n\t\ta.date\t\n) a\njoin hledger.average_daily_expenses b on\n\ta.date = b.date\nwhere\n\tb.currency = '${commodity}' and\n\tb.daily_expense is not null\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -605,7 +605,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\r\n  a.date,\r\n\tb.classification,\r\n\tsum(balance) as amount\r\nfrom hledger.balance_to_date_converted a\r\njoin hledger.assets_classification b on\r\n\ta.account = b.account\r\nwhere\r\n\tcurrency = '${commodity}' \r\ngroup by\r\n\ta.date,\r\n\tb.classification\r\n",
+          "rawSql": "select\n  a.date,\n\tb.classification,\n\tsum(balance) as amount\nfrom hledger.balance_to_date_converted a\njoin hledger.assets_classification b on\n\ta.account = b.account\nwhere\n\tcurrency = '${commodity}' \ngroup by\n\ta.date,\n\tb.classification\norder by\n\ta.date",
           "refId": "A",
           "sql": {
             "columns": [
@@ -929,7 +929,7 @@
       "type": "stat"
     },
     {
-      "collapsed": false,
+      "collapsed": true,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -937,1638 +937,1642 @@
         "y": 7
       },
       "id": 18,
-      "panels": [],
+      "panels": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "pgds"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "fieldMinMax": false,
+              "mappings": [],
+              "thresholds": {
+                "mode": "percentage",
+                "steps": [
+                  {
+                    "color": "red",
+                    "value": null
+                  },
+                  {
+                    "color": "#EAB839",
+                    "value": 25
+                  },
+                  {
+                    "color": "orange",
+                    "value": 50
+                  },
+                  {
+                    "color": "green",
+                    "value": 75
+                  }
+                ]
+              },
+              "unit": "currencyUSD"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 12,
+            "x": 0,
+            "y": 8
+          },
+          "id": 16,
+          "options": {
+            "colorByField": "amount",
+            "labelFields": [],
+            "sizeField": "amount",
+            "textField": "classification",
+            "tiling": "treemapSquarify"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "pgds"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "select\r\n  a.date,\r\n\tb.classification,\r\n\tsum(balance) as amount\r\nfrom hledger.balance_to_date_converted a\r\njoin hledger.assets_classification b on\r\n\ta.account = b.account\r\nwhere\r\n\tcurrency = '${commodity}' and\r\n\ta.date between '${__from:date:YYYY-MM-DD}' and '${__to:date:YYYY-MM-DD}'\r\ngroup by\r\n\ta.date,\r\n\tb.classification\r\norder by \r\n\ta.date desc",
+              "refId": "A",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50
+              }
+            }
+          ],
+          "title": "Assets Distribution",
+          "type": "marcusolsson-treemap-panel"
+        },
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Dashboard --"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                }
+              },
+              "mappings": [],
+              "unit": "currencyUSD"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 7,
+            "x": 12,
+            "y": 8
+          },
+          "id": 20,
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true,
+              "values": [
+                "percent"
+              ]
+            },
+            "pieType": "pie",
+            "reduceOptions": {
+              "calcs": [
+                "firstNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "tooltip": {
+              "maxHeight": 600,
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "datasource",
+                "uid": "-- Dashboard --"
+              },
+              "panelId": 16,
+              "refId": "A",
+              "withTransforms": true
+            }
+          ],
+          "title": "Weighted Allocation",
+          "transformations": [
+            {
+              "id": "groupingToMatrix",
+              "options": {
+                "columnField": "classification",
+                "rowField": "date",
+                "valueField": "amount"
+              }
+            }
+          ],
+          "type": "piechart"
+        },
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Dashboard --"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "continuous-RdYlGr"
+              },
+              "decimals": 2,
+              "fieldMinMax": false,
+              "mappings": [],
+              "noValue": "$0",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "currencyUSD"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 5,
+            "x": 19,
+            "y": 8
+          },
+          "id": 9,
+          "options": {
+            "displayMode": "gradient",
+            "maxVizHeight": 300,
+            "minVizHeight": 16,
+            "minVizWidth": 8,
+            "namePlacement": "auto",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "firstNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showUnfilled": true,
+            "sizing": "auto",
+            "valueMode": "text"
+          },
+          "pluginVersion": "11.0.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "datasource",
+                "uid": "-- Dashboard --"
+              },
+              "panelId": 16,
+              "refId": "A",
+              "withTransforms": true
+            }
+          ],
+          "title": "Cost Allocation",
+          "transformations": [
+            {
+              "id": "groupingToMatrix",
+              "options": {
+                "columnField": "classification",
+                "rowField": "date",
+                "valueField": "amount"
+              }
+            }
+          ],
+          "type": "bargauge"
+        }
+      ],
       "title": "Assets",
       "type": "row"
     },
     {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "pgds"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "fieldMinMax": false,
-          "mappings": [],
-          "thresholds": {
-            "mode": "percentage",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "#EAB839",
-                "value": 25
-              },
-              {
-                "color": "orange",
-                "value": 50
-              },
-              {
-                "color": "green",
-                "value": 75
-              }
-            ]
-          },
-          "unit": "currencyUSD"
-        },
-        "overrides": []
-      },
+      "collapsed": true,
       "gridPos": {
-        "h": 9,
-        "w": 12,
+        "h": 1,
+        "w": 24,
         "x": 0,
         "y": 8
       },
-      "id": 16,
-      "options": {
-        "colorByField": "amount",
-        "labelFields": [],
-        "sizeField": "amount",
-        "textField": "classification",
-        "tiling": "treemapSquarify"
-      },
-      "targets": [
+      "id": 22,
+      "panels": [
         {
           "datasource": {
             "type": "grafana-postgresql-datasource",
             "uid": "pgds"
           },
-          "editorMode": "code",
-          "format": "table",
-          "rawQuery": true,
-          "rawSql": "select\r\n  a.date,\r\n\tb.classification,\r\n\tsum(balance) as amount\r\nfrom hledger.balance_to_date_converted a\r\njoin hledger.assets_classification b on\r\n\ta.account = b.account\r\nwhere\r\n\tcurrency = '${commodity}' and\r\n\ta.date between '${__from:date:YYYY-MM-DD}' and '${__to:date:YYYY-MM-DD}'\r\ngroup by\r\n\ta.date,\r\n\tb.classification\r\norder by \r\n\ta.date desc",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
+          "description": "Debt-to-income (DTI) ratio is the percentage of your monthly gross income that goes to paying your monthly debt payments and is used by lenders to determine your borrowing risk.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": true,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "axisSoftMin": 0,
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
                 },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Assets Distribution",
-      "type": "marcusolsson-treemap-panel"
-    },
-    {
-      "datasource": {
-        "type": "datasource",
-        "uid": "-- Dashboard --"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            }
-          },
-          "mappings": [],
-          "unit": "currencyUSD"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 7,
-        "x": 12,
-        "y": 8
-      },
-      "id": 20,
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "values": [
-            "percent"
-          ]
-        },
-        "pieType": "pie",
-        "reduceOptions": {
-          "calcs": [
-            "firstNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "tooltip": {
-          "maxHeight": 600,
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "datasource",
-            "uid": "-- Dashboard --"
-          },
-          "panelId": 16,
-          "refId": "A",
-          "withTransforms": true
-        }
-      ],
-      "title": "Weighted Allocation",
-      "transformations": [
-        {
-          "id": "groupingToMatrix",
-          "options": {
-            "columnField": "classification",
-            "rowField": "date",
-            "valueField": "amount"
-          }
-        }
-      ],
-      "type": "piechart"
-    },
-    {
-      "datasource": {
-        "type": "datasource",
-        "uid": "-- Dashboard --"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "continuous-RdYlGr"
-          },
-          "decimals": 2,
-          "fieldMinMax": false,
-          "mappings": [],
-          "noValue": "$0",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "area"
+                }
+              },
+              "fieldMinMax": false,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "transparent",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "currencyUSD"
+            },
+            "overrides": [
               {
-                "color": "green",
-                "value": null
+                "matcher": {
+                  "id": "byName",
+                  "options": "Ratio"
+                },
+                "properties": [
+                  {
+                    "id": "custom.axisPlacement",
+                    "value": "right"
+                  },
+                  {
+                    "id": "unit",
+                    "value": "percentunit"
+                  },
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "transparent",
+                          "value": null
+                        },
+                        {
+                          "color": "red",
+                          "value": 0.35
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "min",
+                    "value": 0
+                  },
+                  {
+                    "id": "max",
+                    "value": 1
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Income"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "green",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Liabilities"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "red",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
               }
             ]
           },
-          "unit": "currencyUSD"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 5,
-        "x": 19,
-        "y": 8
-      },
-      "id": 9,
-      "options": {
-        "displayMode": "gradient",
-        "maxVizHeight": 300,
-        "minVizHeight": 16,
-        "minVizWidth": 8,
-        "namePlacement": "auto",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "firstNotNull"
+          "gridPos": {
+            "h": 9,
+            "w": 8,
+            "x": 0,
+            "y": 9
+          },
+          "id": 25,
+          "options": {
+            "legend": {
+              "calcs": [
+                "mean",
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "maxHeight": 600,
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "pgds"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "select\r\n\ta.date,\r\n\t-1 * sum(case when a.account = 'Liabilities' then balance else 0 end) as \"Liabilities\",\r\n\t-1 * sum(case when a.account = 'Income' then balance else 0 end) as \"Income\",\r\n\t(\r\n\t\tsum(case when a.account = 'Liabilities' then balance else 0 end) /\r\n\t\tsum(case when a.account = 'Income' then balance else 0 end)\r\n\t) as \"Ratio\"\r\nfrom hledger.balance_to_date_converted a\r\nwhere\r\n\ta.currency = '${commodity}' and\r\n\ta.account in (\r\n\t\t'Liabilities',\r\n\t\t'Income'\r\n\t) and\r\n\ta.date between '${__from:date:yyyy-MM-DD}' and '${__to:date:yyyy-MM-DD}'\r\ngroup by\r\n\ta.date\r\norder by\r\n\ta.date",
+              "refId": "A",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50
+              }
+            }
           ],
-          "fields": "",
-          "values": false
+          "title": "Debt-to-Income Ratio *",
+          "type": "timeseries"
         },
-        "showUnfilled": true,
-        "sizing": "auto",
-        "valueMode": "text"
-      },
-      "pluginVersion": "11.0.0",
-      "targets": [
         {
           "datasource": {
-            "type": "datasource",
-            "uid": "-- Dashboard --"
+            "type": "grafana-postgresql-datasource",
+            "uid": "pgds"
           },
-          "panelId": 16,
-          "refId": "A",
-          "withTransforms": true
-        }
-      ],
-      "title": "Cost Allocation",
-      "transformations": [
-        {
-          "id": "groupingToMatrix",
+          "description": "The debt-to-net worth formula is a good one to be familiar with, as it can shed light on how financially healthy you are -- for you or for anyone assessing your financial condition.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": true,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "axisSoftMin": 0,
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "area"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "transparent",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "currencyUSD"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Ratio"
+                },
+                "properties": [
+                  {
+                    "id": "custom.axisPlacement",
+                    "value": "right"
+                  },
+                  {
+                    "id": "unit",
+                    "value": "percentunit"
+                  },
+                  {
+                    "id": "min",
+                    "value": 0
+                  },
+                  {
+                    "id": "max",
+                    "value": 1
+                  },
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "transparent",
+                          "value": null
+                        },
+                        {
+                          "color": "red",
+                          "value": 0.5
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Liabilities"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "red",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Net Worth"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "green",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 8,
+            "x": 8,
+            "y": 9
+          },
+          "id": 26,
           "options": {
-            "columnField": "classification",
-            "rowField": "date",
-            "valueField": "amount"
-          }
+            "legend": {
+              "calcs": [
+                "mean",
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "maxHeight": 600,
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "pgds"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "select\r\n\ta.date,\r\n\t-1 * sum(case when a.account = 'Liabilities' then balance else 0 end) as \"Liabilities\",\r\n\tsum(balance) as \"Net Worth\",\r\n\t(\r\n\t\t(-1 * sum(case when a.account = 'Liabilities' then balance else 0 end)) /\r\n\t\tsum(balance)\r\n\t) as \"Ratio\"\r\nfrom hledger.balance_to_date_converted a\r\nwhere\r\n\ta.currency = '${commodity}' and\r\n\ta.account in (\r\n\t\t'Liabilities',\r\n\t\t'Assets'\r\n\t) and\r\n\ta.date between '${__from:date:yyyy-MM-DD}' and '${__to:date:yyyy-MM-DD}'\r\ngroup by\r\n\ta.date\r\norder by\r\n\ta.date",
+              "refId": "A",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50
+              }
+            }
+          ],
+          "title": "Debt-to-Net Worht Ratio",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "pgds"
+          },
+          "description": "The Debt to Asset Ratio, also known as the debt ratio, is a leverage ratio that indicates the percentage of assets financed with debt. The higher the ratio, the greater the leverage and financial risk degree.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": true,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "axisSoftMin": 0,
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "area"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "transparent",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "currencyUSD"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Ratio"
+                },
+                "properties": [
+                  {
+                    "id": "custom.axisPlacement",
+                    "value": "right"
+                  },
+                  {
+                    "id": "unit",
+                    "value": "percentunit"
+                  },
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "transparent",
+                          "value": null
+                        },
+                        {
+                          "color": "red",
+                          "value": 0.3
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "min",
+                    "value": 0
+                  },
+                  {
+                    "id": "max",
+                    "value": 1
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Liabilities"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "red",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Assets"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "green",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 8,
+            "x": 16,
+            "y": 9
+          },
+          "id": 24,
+          "options": {
+            "legend": {
+              "calcs": [
+                "mean",
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "maxHeight": 600,
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "pgds"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "select\r\n\ta.date,\r\n\t-1 * sum(case when a.account = 'Liabilities' then balance else 0 end) as \"Liabilities\",\r\n\tsum(case when a.account = 'Assets' then balance else 0 end) as \"Assets\",\r\n\t(\r\n\t\t(-1 * sum(case when a.account = 'Liabilities' then balance else 0 end)) /\r\n\t\tsum(case when a.account = 'Assets' then balance else 0 end)\r\n\t) as \"Ratio\"\r\nfrom hledger.balance_to_date_converted a\r\nwhere\r\n\ta.currency = '${commodity}' and\r\n\ta.account in (\r\n\t\t'Liabilities',\r\n\t\t'Assets'\r\n\t) and\r\n\ta.date between '${__from:date:yyyy-MM-DD}' and '${__to:date:yyyy-MM-DD}'\r\ngroup by\r\n\ta.date\r\n",
+              "refId": "A",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50
+              }
+            }
+          ],
+          "title": "Debt-to-Assets Ratio",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "pgds"
+          },
+          "description": "The cash flow ratio helps you understand what percentage of your income is dedicated to your expenses. Think about the cash flow ratio as how much cash flows in vs flowing out.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": true,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "axisSoftMin": 0,
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineStyle": {
+                  "fill": "solid"
+                },
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "area"
+                }
+              },
+              "fieldMinMax": false,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "transparent",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "currencyUSD"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Ratio"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "percentunit"
+                  },
+                  {
+                    "id": "custom.axisPlacement",
+                    "value": "right"
+                  },
+                  {
+                    "id": "custom.axisCenteredZero",
+                    "value": false
+                  },
+                  {
+                    "id": "min",
+                    "value": 0
+                  },
+                  {
+                    "id": "max",
+                    "value": 1
+                  },
+                  {
+                    "id": "custom.drawStyle",
+                    "value": "line"
+                  },
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "transparent",
+                          "value": null
+                        },
+                        {
+                          "color": "red",
+                          "value": 0.7
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Expenses"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "red",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Income"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "green",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 12,
+            "x": 0,
+            "y": 18
+          },
+          "id": 21,
+          "options": {
+            "legend": {
+              "calcs": [
+                "mean",
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "maxHeight": 600,
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.1.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "pgds"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "select\r\n\ta.date,\r\n\ta.daily_expense as \"Expenses\",\r\n\t-1 * b.daily_income as \"Income\",\r\n\t((-1 * a.daily_expense) / b.daily_income) as \"Ratio\"\r\nfrom hledger.average_daily_expenses a\r\njoin hledger.average_daily_income b on\r\n\ta.date = b.date and\r\n\ta.currency = b.currency\r\nwhere\r\n\ta.daily_expense is not null and\r\n\tb.daily_income is not null and\r\n\ta.currency = '${commodity}' and\r\n\ta.date between '${__from:date:YYYY-MM-DD}' and '${__to:date:YYYY-MM-DD}'\r\n",
+              "refId": "A",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50
+              }
+            }
+          ],
+          "title": "(Moving Average) Cash Flow Ratio",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "pgds"
+          },
+          "description": "The savings ratio is a measure of the proportion of an individual's income that is saved rather than spent on consumption. It is expressed as a percentage and indicates the financial health and stability of an individual.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": true,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "axisSoftMin": 0,
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "area"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "transparent",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "currencyUSD"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Ratio"
+                },
+                "properties": [
+                  {
+                    "id": "custom.axisPlacement",
+                    "value": "right"
+                  },
+                  {
+                    "id": "unit",
+                    "value": "percentunit"
+                  },
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "red",
+                          "value": null
+                        },
+                        {
+                          "color": "transparent",
+                          "value": 0.2
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "min",
+                    "value": 0
+                  },
+                  {
+                    "id": "max",
+                    "value": 1
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Income"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "green",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Savings"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "purple",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 12,
+            "x": 12,
+            "y": 18
+          },
+          "id": 23,
+          "options": {
+            "legend": {
+              "calcs": [
+                "mean",
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "maxHeight": 600,
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "pgds"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "select\r\n\ta.date,\r\n\tsum(a.daily_savings) as \"Savings\",\r\n\tsum(-1 * b.daily_income) as \"Income\",\r\n\t-1 * sum(a.daily_savings / b.daily_income) as \"Ratio\"\r\nfrom hledger.average_daily_savings a\r\njoin hledger.average_daily_income b on\r\n\ta.date = b.date and\r\n\ta.currency = b.currency\r\nwhere\r\n\ta.daily_savings is not null and\r\n\tb.daily_income is not null and\r\n\ta.currency = '${commodity}' and\r\n\ta.date between '${__from:date:YYYY-MM-DD}' and '${__to:date:YYYY-MM-DD}'\r\ngroup by\r\n\ta.date\r\n",
+              "refId": "A",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50
+              }
+            }
+          ],
+          "title": "(Moving Average) Savings Ratio",
+          "type": "timeseries"
         }
       ],
-      "type": "bargauge"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 17
-      },
-      "id": 22,
-      "panels": [],
       "title": "Ratios",
       "type": "row"
     },
     {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "pgds"
-      },
-      "description": "Debt-to-income (DTI) ratio is the percentage of your monthly gross income that goes to paying your monthly debt payments and is used by lenders to determine your borrowing risk.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": true,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "axisSoftMin": 0,
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "area"
-            }
-          },
-          "fieldMinMax": false,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "transparent",
-                "value": null
-              }
-            ]
-          },
-          "unit": "currencyUSD"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Ratio"
-            },
-            "properties": [
-              {
-                "id": "custom.axisPlacement",
-                "value": "right"
-              },
-              {
-                "id": "unit",
-                "value": "percentunit"
-              },
-              {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "transparent",
-                      "value": null
-                    },
-                    {
-                      "color": "red",
-                      "value": 0.35
-                    }
-                  ]
-                }
-              },
-              {
-                "id": "min",
-                "value": 0
-              },
-              {
-                "id": "max",
-                "value": 1
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Income"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "green",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Liabilities"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "red",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 8,
-        "x": 0,
-        "y": 18
-      },
-      "id": 25,
-      "options": {
-        "legend": {
-          "calcs": [
-            "mean",
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "maxHeight": 600,
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "pgds"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "rawQuery": true,
-          "rawSql": "select\r\n\ta.date,\r\n\t-1 * sum(case when a.account = 'Liabilities' then balance else 0 end) as \"Liabilities\",\r\n\t-1 * sum(case when a.account = 'Income' then balance else 0 end) as \"Income\",\r\n\t(\r\n\t\tsum(case when a.account = 'Liabilities' then balance else 0 end) /\r\n\t\tsum(case when a.account = 'Income' then balance else 0 end)\r\n\t) as \"Ratio\"\r\nfrom hledger.balance_to_date_converted a\r\nwhere\r\n\ta.currency = '${commodity}' and\r\n\ta.account in (\r\n\t\t'Liabilities',\r\n\t\t'Income'\r\n\t) and\r\n\ta.date between '${__from:date:yyyy-MM-DD}' and '${__to:date:yyyy-MM-DD}'\r\ngroup by\r\n\ta.date\r\norder by\r\n\ta.date",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Debt-to-Income Ratio *",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "pgds"
-      },
-      "description": "The debt-to-net worth formula is a good one to be familiar with, as it can shed light on how financially healthy you are -- for you or for anyone assessing your financial condition.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": true,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "axisSoftMin": 0,
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "area"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "transparent",
-                "value": null
-              }
-            ]
-          },
-          "unit": "currencyUSD"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Ratio"
-            },
-            "properties": [
-              {
-                "id": "custom.axisPlacement",
-                "value": "right"
-              },
-              {
-                "id": "unit",
-                "value": "percentunit"
-              },
-              {
-                "id": "min",
-                "value": 0
-              },
-              {
-                "id": "max",
-                "value": 1
-              },
-              {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "transparent",
-                      "value": null
-                    },
-                    {
-                      "color": "red",
-                      "value": 0.5
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Liabilities"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "red",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Net Worth"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "green",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 8,
-        "x": 8,
-        "y": 18
-      },
-      "id": 26,
-      "options": {
-        "legend": {
-          "calcs": [
-            "mean",
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "maxHeight": 600,
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "pgds"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "rawQuery": true,
-          "rawSql": "select\r\n\ta.date,\r\n\t-1 * sum(case when a.account = 'Liabilities' then balance else 0 end) as \"Liabilities\",\r\n\tsum(balance) as \"Net Worth\",\r\n\t(\r\n\t\t(-1 * sum(case when a.account = 'Liabilities' then balance else 0 end)) /\r\n\t\tsum(balance)\r\n\t) as \"Ratio\"\r\nfrom hledger.balance_to_date_converted a\r\nwhere\r\n\ta.currency = '${commodity}' and\r\n\ta.account in (\r\n\t\t'Liabilities',\r\n\t\t'Assets'\r\n\t) and\r\n\ta.date between '${__from:date:yyyy-MM-DD}' and '${__to:date:yyyy-MM-DD}'\r\ngroup by\r\n\ta.date\r\norder by\r\n\ta.date",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Debt-to-Net Worht Ratio",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "pgds"
-      },
-      "description": "The Debt to Asset Ratio, also known as the debt ratio, is a leverage ratio that indicates the percentage of assets financed with debt. The higher the ratio, the greater the leverage and financial risk degree.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": true,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "axisSoftMin": 0,
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "area"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "transparent",
-                "value": null
-              }
-            ]
-          },
-          "unit": "currencyUSD"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Ratio"
-            },
-            "properties": [
-              {
-                "id": "custom.axisPlacement",
-                "value": "right"
-              },
-              {
-                "id": "unit",
-                "value": "percentunit"
-              },
-              {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "transparent",
-                      "value": null
-                    },
-                    {
-                      "color": "red",
-                      "value": 0.3
-                    }
-                  ]
-                }
-              },
-              {
-                "id": "min",
-                "value": 0
-              },
-              {
-                "id": "max",
-                "value": 1
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Liabilities"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "red",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Assets"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "green",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 8,
-        "x": 16,
-        "y": 18
-      },
-      "id": 24,
-      "options": {
-        "legend": {
-          "calcs": [
-            "mean",
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "maxHeight": 600,
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "pgds"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "rawQuery": true,
-          "rawSql": "select\r\n\ta.date,\r\n\t-1 * sum(case when a.account = 'Liabilities' then balance else 0 end) as \"Liabilities\",\r\n\tsum(case when a.account = 'Assets' then balance else 0 end) as \"Assets\",\r\n\t(\r\n\t\t(-1 * sum(case when a.account = 'Liabilities' then balance else 0 end)) /\r\n\t\tsum(case when a.account = 'Assets' then balance else 0 end)\r\n\t) as \"Ratio\"\r\nfrom hledger.balance_to_date_converted a\r\nwhere\r\n\ta.currency = '${commodity}' and\r\n\ta.account in (\r\n\t\t'Liabilities',\r\n\t\t'Assets'\r\n\t) and\r\n\ta.date between '${__from:date:yyyy-MM-DD}' and '${__to:date:yyyy-MM-DD}'\r\ngroup by\r\n\ta.date\r\n",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Debt-to-Assets Ratio",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "pgds"
-      },
-      "description": "The cash flow ratio helps you understand what percentage of your income is dedicated to your expenses. Think about the cash flow ratio as how much cash flows in vs flowing out.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": true,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "axisSoftMin": 0,
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineStyle": {
-              "fill": "solid"
-            },
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "area"
-            }
-          },
-          "fieldMinMax": false,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "transparent",
-                "value": null
-              }
-            ]
-          },
-          "unit": "currencyUSD"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Ratio"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "percentunit"
-              },
-              {
-                "id": "custom.axisPlacement",
-                "value": "right"
-              },
-              {
-                "id": "custom.axisCenteredZero",
-                "value": false
-              },
-              {
-                "id": "min",
-                "value": 0
-              },
-              {
-                "id": "max",
-                "value": 1
-              },
-              {
-                "id": "custom.drawStyle",
-                "value": "line"
-              },
-              {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "transparent",
-                      "value": null
-                    },
-                    {
-                      "color": "red",
-                      "value": 0.7
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Expenses"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "red",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Income"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "green",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 0,
-        "y": 27
-      },
-      "id": 21,
-      "options": {
-        "legend": {
-          "calcs": [
-            "mean",
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "maxHeight": 600,
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.1.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "pgds"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "rawQuery": true,
-          "rawSql": "select\r\n\ta.date,\r\n\ta.daily_expense as \"Expenses\",\r\n\t-1 * b.daily_income as \"Income\",\r\n\t((-1 * a.daily_expense) / b.daily_income) as \"Ratio\"\r\nfrom hledger.average_daily_expenses a\r\njoin hledger.average_daily_income b on\r\n\ta.date = b.date and\r\n\ta.currency = b.currency\r\nwhere\r\n\ta.daily_expense is not null and\r\n\tb.daily_income is not null and\r\n\ta.currency = '${commodity}' and\r\n\ta.date between '${__from:date:YYYY-MM-DD}' and '${__to:date:YYYY-MM-DD}'\r\n",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "(Moving Average) Cash Flow Ratio",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "pgds"
-      },
-      "description": "The savings ratio is a measure of the proportion of an individual's income that is saved rather than spent on consumption. It is expressed as a percentage and indicates the financial health and stability of an individual.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": true,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "axisSoftMin": 0,
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "area"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "transparent",
-                "value": null
-              }
-            ]
-          },
-          "unit": "currencyUSD"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Ratio"
-            },
-            "properties": [
-              {
-                "id": "custom.axisPlacement",
-                "value": "right"
-              },
-              {
-                "id": "unit",
-                "value": "percentunit"
-              },
-              {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "red",
-                      "value": null
-                    },
-                    {
-                      "color": "transparent",
-                      "value": 0.2
-                    }
-                  ]
-                }
-              },
-              {
-                "id": "min",
-                "value": 0
-              },
-              {
-                "id": "max",
-                "value": 1
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Income"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "green",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Savings"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "purple",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 12,
-        "y": 27
-      },
-      "id": 23,
-      "options": {
-        "legend": {
-          "calcs": [
-            "mean",
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "maxHeight": 600,
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "pgds"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "rawQuery": true,
-          "rawSql": "select\r\n\ta.date,\r\n\ta.daily_savings as \"Savings\",\r\n\t-1 * b.daily_income as \"Income\",\r\n\t((-1 * a.daily_savings) / b.daily_income) as \"Ratio\"\r\nfrom hledger.average_daily_savings a\r\njoin hledger.average_daily_income b on\r\n\ta.date = b.date and\r\n\ta.currency = b.currency\r\nwhere\r\n\ta.daily_savings is not null and\r\n\tb.daily_income is not null and\r\n\ta.currency = '${commodity}' and\r\n\ta.date between '${__from:date:YYYY-MM-DD}' and '${__to:date:YYYY-MM-DD}'\r\n",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "(Moving Average) Savings Ratio",
-      "type": "timeseries"
-    },
-    {
-      "collapsed": false,
+      "collapsed": true,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 36
+        "y": 9
       },
       "id": 31,
-      "panels": [],
+      "panels": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "pgds"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 10
+          },
+          "id": 32,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "maxHeight": 600,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "title": "Expense Distribution",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "pgds"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 10
+          },
+          "id": 33,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "maxHeight": 600,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "title": "Top Offenders",
+          "type": "timeseries"
+        }
+      ],
       "title": "Expenses",
       "type": "row"
     },
     {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "pgds"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 37
-      },
-      "id": 32,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "maxHeight": 600,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "title": "Expense Distribution",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "pgds"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 37
-      },
-      "id": 33,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "maxHeight": 600,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "title": "Top Offenders",
-      "type": "timeseries"
-    },
-    {
-      "collapsed": false,
+      "collapsed": true,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 45
+        "y": 10
       },
       "id": 17,
-      "panels": [],
+      "panels": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "pgds"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": true,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 20,
+                "gradientMode": "opacity",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "currencyUSD"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 12,
+            "x": 0,
+            "y": 11
+          },
+          "id": 29,
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "delta"
+              ],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "maxHeight": 600,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "pgds"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "select\r\n\ta.date,\r\n\tsum(balance) as \"Retirement\"\r\nfrom hledger.balance_to_date_converted a\r\njoin hledger.assets_classification b on\r\n\ta.account = b.account\r\nwhere\r\n\ta.currency = '${commodity}' and\r\n\tb.classification = 'Retirement' \r\ngroup by\r\n\ta.date\r\norder by\r\n\tdate desc\r\n",
+              "refId": "A",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50
+              }
+            }
+          ],
+          "title": "Retirement Grow",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "pgds"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": true,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "axisSoftMin": 0,
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "line+area"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "red",
+                    "value": null
+                  },
+                  {
+                    "color": "transparent",
+                    "value": 0.2
+                  }
+                ]
+              },
+              "unit": "currencyUSD"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Ratio"
+                },
+                "properties": [
+                  {
+                    "id": "custom.axisPlacement",
+                    "value": "right"
+                  },
+                  {
+                    "id": "unit",
+                    "value": "percentunit"
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 12,
+            "x": 12,
+            "y": 11
+          },
+          "id": 30,
+          "options": {
+            "legend": {
+              "calcs": [
+                "mean",
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "maxHeight": 600,
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "pgds"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "select\r\n\ta.date,\r\n\t-1 * sum(case when a.account = 'Income' then delta else 0 end) as \"Revenues\",\r\n\tsum(case when a.account != 'Income' then delta else 0 end) as \"Retirement\",\r\n\t(\r\n\t\tsum(case when a.account != 'Income' then delta else 0 end) /\r\n\t\t(-1 * sum(case when a.account = 'Income' then delta else 0 end))\r\n\t) as \"Ratio\"\r\nfrom hledger.yearly_deltas a\r\nleft join hledger.assets_classification b on\r\n\ta.account = b.account\r\nwhere\r\n\t(\r\n\t\ta.account = 'Income' or\r\n\t\tb.classification = 'Retirement'\r\n\t) and\r\n\ta.date between '${__from:date:yyyy-MM-DD}' and '${__to:date:yyyy-MM-DD}'\r\ngroup by\r\n\ta.date\r\norder by \r\n\ta.date desc\r\n",
+              "refId": "A",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50
+              }
+            }
+          ],
+          "title": "Yearly Savings",
+          "type": "timeseries"
+        }
+      ],
       "title": "Retirement",
       "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "pgds"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": true,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 20,
-            "gradientMode": "opacity",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "currencyUSD"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 0,
-        "y": 46
-      },
-      "id": 29,
-      "options": {
-        "legend": {
-          "calcs": [
-            "lastNotNull",
-            "delta"
-          ],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "maxHeight": 600,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "pgds"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "rawQuery": true,
-          "rawSql": "select\r\n\ta.date,\r\n\tsum(balance) as \"Retirement\"\r\nfrom hledger.balance_to_date_converted a\r\njoin hledger.assets_classification b on\r\n\ta.account = b.account\r\nwhere\r\n\ta.currency = '${commodity}' and\r\n\tb.classification = 'Retirement' \r\ngroup by\r\n\ta.date\r\norder by\r\n\tdate desc\r\n",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Retirement Grow",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "pgds"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": true,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "axisSoftMin": 0,
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "line+area"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "transparent",
-                "value": 0.2
-              }
-            ]
-          },
-          "unit": "currencyUSD"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Ratio"
-            },
-            "properties": [
-              {
-                "id": "custom.axisPlacement",
-                "value": "right"
-              },
-              {
-                "id": "unit",
-                "value": "percentunit"
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 12,
-        "y": 46
-      },
-      "id": 30,
-      "options": {
-        "legend": {
-          "calcs": [
-            "mean",
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "maxHeight": 600,
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "pgds"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "rawQuery": true,
-          "rawSql": "select\r\n\ta.date,\r\n\t-1 * sum(case when a.account = 'Income' then delta else 0 end) as \"Revenues\",\r\n\tsum(case when a.account != 'Income' then delta else 0 end) as \"Retirement\",\r\n\t(\r\n\t\tsum(case when a.account != 'Income' then delta else 0 end) /\r\n\t\t(-1 * sum(case when a.account = 'Income' then delta else 0 end))\r\n\t) as \"Ratio\"\r\nfrom hledger.yearly_deltas a\r\nleft join hledger.assets_classification b on\r\n\ta.account = b.account\r\nwhere\r\n\t(\r\n\t\ta.account = 'Income' or\r\n\t\tb.classification = 'Retirement'\r\n\t) and\r\n\ta.date between '${__from:date:yyyy-MM-DD}' and '${__to:date:yyyy-MM-DD}'\r\ngroup by\r\n\ta.date\r\norder by \r\n\ta.date desc\r\n",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Yearly Savings",
-      "type": "timeseries"
     }
   ],
   "refresh": "",
@@ -2582,6 +2586,10 @@
           "text": "USD",
           "value": "USD"
         },
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "pgds"
+        },
         "definition": "select currency from hledger.main_commodities",
         "hide": 0,
         "includeAll": false,
@@ -2593,6 +2601,7 @@
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
+        "sort": 0,
         "type": "query"
       },
       {
