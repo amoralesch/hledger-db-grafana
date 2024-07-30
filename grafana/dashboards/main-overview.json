@@ -949,6 +949,158 @@
       "fieldConfig": {
         "defaults": {
           "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 75,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "fieldMinMax": false,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "date\\classification"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "time:YYYY-MM"
+              },
+              {
+                "id": "displayName",
+                "value": "Date"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 31,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "maxHeight": 600,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "pgds"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select\n\ta.date,\n\tb.classification,\n\tsum(balance) as amount\nfrom hledger.balance_to_date_converted a\njoin hledger.assets_classification b on\n\ta.account = b.account\nwhere\n\tcurrency = '${commodity}' and\n\t$__timeFilter(a.date)\ngroup by\n\ta.date,\n\tb.classification\norder by \n\ta.date",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Assets (stacked)",
+      "transformations": [
+        {
+          "id": "groupingToMatrix",
+          "options": {
+            "columnField": "classification",
+            "rowField": "date",
+            "valueField": "amount"
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "time",
+                "targetField": "date\\classification"
+              }
+            ],
+            "fields": {}
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "pgds"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
             "mode": "thresholds"
           },
           "fieldMinMax": false,
@@ -982,7 +1134,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 8
+        "y": 17
       },
       "id": 16,
       "options": {
@@ -1051,7 +1203,7 @@
         "h": 9,
         "w": 7,
         "x": 12,
-        "y": 8
+        "y": 17
       },
       "id": 20,
       "options": {
@@ -1132,7 +1284,7 @@
         "h": 9,
         "w": 5,
         "x": 19,
-        "y": 8
+        "y": 17
       },
       "id": 9,
       "options": {
@@ -1184,7 +1336,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 17
+        "y": 26
       },
       "id": 22,
       "panels": [
@@ -1320,7 +1472,7 @@
             "h": 9,
             "w": 8,
             "x": 0,
-            "y": 9
+            "y": 17
           },
           "id": 25,
           "options": {
@@ -1503,7 +1655,7 @@
             "h": 9,
             "w": 8,
             "x": 8,
-            "y": 9
+            "y": 17
           },
           "id": 26,
           "options": {
@@ -1686,7 +1838,7 @@
             "h": 9,
             "w": 8,
             "x": 16,
-            "y": 9
+            "y": 17
           },
           "id": 24,
           "options": {
@@ -1881,7 +2033,7 @@
             "h": 9,
             "w": 12,
             "x": 0,
-            "y": 18
+            "y": 26
           },
           "id": 21,
           "options": {
@@ -2065,7 +2217,7 @@
             "h": 9,
             "w": 12,
             "x": 12,
-            "y": 18
+            "y": 26
           },
           "id": 23,
           "options": {
@@ -2127,7 +2279,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 18
+        "y": 27
       },
       "id": 17,
       "panels": [
@@ -2195,7 +2347,7 @@
             "h": 9,
             "w": 12,
             "x": 0,
-            "y": 20
+            "y": 28
           },
           "id": 29,
           "options": {
@@ -2330,7 +2482,7 @@
             "h": 9,
             "w": 12,
             "x": 12,
-            "y": 20
+            "y": 28
           },
           "id": 30,
           "options": {
@@ -2507,7 +2659,7 @@
     ]
   },
   "time": {
-    "from": "now/y",
+    "from": "2008-01-01T00:00:00.000Z",
     "to": "now"
   },
   "timeRangeUpdatedDuringEditOrView": false,
