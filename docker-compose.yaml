@@ -9,6 +9,7 @@ services:
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
+    shm_size: 256m
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./postgres:/docker-entrypoint-initdb.d/
