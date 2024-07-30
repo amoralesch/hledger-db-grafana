@@ -198,15 +198,7 @@ def calculate_fx_rates(
     explicit_rates = extract_from_hledger(raw_prices)
     last_day_currencies = find_last_day_currencies(explicit_rates)
     projected_rates = project_rates(date, explicit_rates, last_day_currencies)
-
-    # first call:
-    # A -> B, B -> C, C -> D => A -> C, B -> D
-    # it misses A -> D
     rates = generate_implicit_rates(projected_rates)
-
-    # second call:
-    # it adds A -> D
-    rates = generate_implicit_rates(rates)
 
     return rates
 
