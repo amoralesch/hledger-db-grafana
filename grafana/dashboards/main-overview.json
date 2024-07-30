@@ -1238,8 +1238,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "transparent",
-                    "value": null
+                    "color": "transparent"
                   }
                 ]
               },
@@ -1266,8 +1265,7 @@
                       "mode": "absolute",
                       "steps": [
                         {
-                          "color": "transparent",
-                          "value": null
+                          "color": "transparent"
                         },
                         {
                           "color": "red",
@@ -1423,8 +1421,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "transparent",
-                    "value": null
+                    "color": "transparent"
                   }
                 ]
               },
@@ -1459,8 +1456,7 @@
                       "mode": "absolute",
                       "steps": [
                         {
-                          "color": "transparent",
-                          "value": null
+                          "color": "transparent"
                         },
                         {
                           "color": "red",
@@ -1608,8 +1604,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "transparent",
-                    "value": null
+                    "color": "transparent"
                   }
                 ]
               },
@@ -1636,8 +1631,7 @@
                       "mode": "absolute",
                       "steps": [
                         {
-                          "color": "transparent",
-                          "value": null
+                          "color": "transparent"
                         },
                         {
                           "color": "red",
@@ -1797,8 +1791,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "transparent",
-                    "value": null
+                    "color": "transparent"
                   }
                 ]
               },
@@ -1841,8 +1834,7 @@
                       "mode": "absolute",
                       "steps": [
                         {
-                          "color": "transparent",
-                          "value": null
+                          "color": "transparent"
                         },
                         {
                           "color": "red",
@@ -1991,8 +1983,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "transparent",
-                    "value": null
+                    "color": "transparent"
                   }
                 ]
               },
@@ -2019,8 +2010,7 @@
                       "mode": "absolute",
                       "steps": [
                         {
-                          "color": "red",
-                          "value": null
+                          "color": "red"
                         },
                         {
                           "color": "transparent",
@@ -2139,7 +2129,7 @@
         "x": 0,
         "y": 18
       },
-      "id": 31,
+      "id": 17,
       "panels": [
         {
           "datasource": {
@@ -2152,15 +2142,15 @@
                 "mode": "palette-classic"
               },
               "custom": {
-                "axisBorderShow": false,
+                "axisBorderShow": true,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
                 "drawStyle": "line",
-                "fillOpacity": 0,
-                "gradientMode": "none",
+                "fillOpacity": 20,
+                "gradientMode": "opacity",
                 "hideFrom": {
                   "legend": false,
                   "tooltip": false,
@@ -2196,20 +2186,24 @@
                     "value": 80
                   }
                 ]
-              }
+              },
+              "unit": "currencyUSD"
             },
             "overrides": []
           },
           "gridPos": {
-            "h": 8,
+            "h": 9,
             "w": 12,
             "x": 0,
-            "y": 10
+            "y": 20
           },
-          "id": 32,
+          "id": 29,
           "options": {
             "legend": {
-              "calcs": [],
+              "calcs": [
+                "lastNotNull",
+                "delta"
+              ],
               "displayMode": "list",
               "placement": "bottom",
               "showLegend": true
@@ -2220,7 +2214,37 @@
               "sort": "none"
             }
           },
-          "title": "Expense Distribution",
+          "targets": [
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "pgds"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "select\r\n\ta.date,\r\n\tsum(balance) as \"Retirement\"\r\nfrom hledger.balance_to_date_converted a\r\njoin hledger.assets_classification b on\r\n\ta.account = b.account\r\nwhere\r\n\ta.currency = '${commodity}' and\r\n\tb.classification = 'Retirement' \r\ngroup by\r\n\ta.date\r\norder by\r\n\tdate desc\r\n",
+              "refId": "A",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50
+              }
+            }
+          ],
+          "title": "Retirement Grow",
           "type": "timeseries"
         },
         {
@@ -2234,11 +2258,12 @@
                 "mode": "palette-classic"
               },
               "custom": {
-                "axisBorderShow": false,
+                "axisBorderShow": true,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
+                "axisSoftMin": 0,
                 "barAlignment": 0,
                 "drawStyle": "line",
                 "fillOpacity": 0,
@@ -2262,316 +2287,104 @@
                   "mode": "none"
                 },
                 "thresholdsStyle": {
-                  "mode": "off"
+                  "mode": "line+area"
                 }
               },
               "mappings": [],
+              "min": 0,
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
+                    "color": "red",
                     "value": null
                   },
                   {
-                    "color": "red",
-                    "value": 80
+                    "color": "transparent",
+                    "value": 0.2
+                  }
+                ]
+              },
+              "unit": "currencyUSD"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Ratio"
+                },
+                "properties": [
+                  {
+                    "id": "custom.axisPlacement",
+                    "value": "right"
+                  },
+                  {
+                    "id": "unit",
+                    "value": "percentunit"
                   }
                 ]
               }
-            },
-            "overrides": []
+            ]
           },
           "gridPos": {
-            "h": 8,
+            "h": 9,
             "w": 12,
             "x": 12,
-            "y": 10
+            "y": 20
           },
-          "id": 33,
+          "id": 30,
           "options": {
             "legend": {
-              "calcs": [],
-              "displayMode": "list",
+              "calcs": [
+                "mean",
+                "lastNotNull"
+              ],
+              "displayMode": "table",
               "placement": "bottom",
               "showLegend": true
             },
             "tooltip": {
               "maxHeight": 600,
-              "mode": "single",
+              "mode": "multi",
               "sort": "none"
             }
           },
-          "title": "Top Offenders",
+          "targets": [
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "pgds"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "select\r\n\ta.date,\r\n\t-1 * sum(case when a.account = 'Income' then a.balance else 0 end) over (order by a.date) as \"Income\",\r\n\tsum(case when a.account != 'Income' then a.balance else 0 end) over (order by a.date) as \"Retirement\",\r\n\tsum(case when a.account != 'Income' then a.balance else 0 end) over (order by a.date) / \r\n\t(-1 * sum(case when a.account = 'Income' then a.balance else 0 end) over (order by a.date)) as \"Ratio\"\r\nfrom hledger.daily_delta_converted a\r\nleft join hledger.assets_classification b on\r\n\ta.account = b.account\r\nwhere\r\n\t$__timeFilter(a.date) and\r\n\t(\r\n\t\ta.account ='Income' or\r\n\t\tb.classification = 'Retirement'\r\n\t) and\r\n\ta.currency = '${commodity}'\r\norder by\r\n\ta.date",
+              "refId": "A",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50
+              }
+            }
+          ],
+          "title": "Yearly Savings",
           "type": "timeseries"
         }
       ],
-      "title": "Expenses",
-      "type": "row"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 19
-      },
-      "id": 17,
-      "panels": [],
       "title": "Retirement",
       "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "pgds"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": true,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 20,
-            "gradientMode": "opacity",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "currencyUSD"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 0,
-        "y": 20
-      },
-      "id": 29,
-      "options": {
-        "legend": {
-          "calcs": [
-            "lastNotNull",
-            "delta"
-          ],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "maxHeight": 600,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "pgds"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "rawQuery": true,
-          "rawSql": "select\r\n\ta.date,\r\n\tsum(balance) as \"Retirement\"\r\nfrom hledger.balance_to_date_converted a\r\njoin hledger.assets_classification b on\r\n\ta.account = b.account\r\nwhere\r\n\ta.currency = '${commodity}' and\r\n\tb.classification = 'Retirement' \r\ngroup by\r\n\ta.date\r\norder by\r\n\tdate desc\r\n",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Retirement Grow",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "pgds"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": true,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "axisSoftMin": 0,
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "line+area"
-            }
-          },
-          "mappings": [],
-          "min": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "transparent",
-                "value": 0.2
-              }
-            ]
-          },
-          "unit": "currencyUSD"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Ratio"
-            },
-            "properties": [
-              {
-                "id": "custom.axisPlacement",
-                "value": "right"
-              },
-              {
-                "id": "unit",
-                "value": "percentunit"
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 12,
-        "y": 20
-      },
-      "id": 30,
-      "options": {
-        "legend": {
-          "calcs": [
-            "mean",
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "maxHeight": 600,
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "pgds"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "rawQuery": true,
-          "rawSql": "select\r\n\ta.date,\r\n\t-1 * sum(case when a.account = 'Income' then a.balance else 0 end) over (order by a.date) as \"Income\",\r\n\tsum(case when a.account != 'Income' then a.balance else 0 end) over (order by a.date) as \"Retirement\",\r\n\tsum(case when a.account != 'Income' then a.balance else 0 end) over (order by a.date) / \r\n\t(-1 * sum(case when a.account = 'Income' then a.balance else 0 end) over (order by a.date)) as \"Ratio\"\r\nfrom hledger.daily_delta_converted a\r\nleft join hledger.assets_classification b on\r\n\ta.account = b.account\r\nwhere\r\n\t$__timeFilter(a.date) and\r\n\t(\r\n\t\ta.account ='Income' or\r\n\t\tb.classification = 'Retirement'\r\n\t) and\r\n\ta.currency = '${commodity}'\r\norder by\r\n\ta.date",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Yearly Savings",
-      "type": "timeseries"
     }
   ],
   "refresh": "",
