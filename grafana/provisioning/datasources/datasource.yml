@@ -7,11 +7,11 @@ datasources:
     type: postgres
     access: proxy
     url: postgres:5432
-    database: postgres
-    user: postgres
+    database: admin
+    user: admin
     basicAuth: false
     secureJsonData:
-      password: "secret"
+      password: "admin"
     jsonData:
       sslmode: "disable"
       tlsAuth: false
