@@ -99,7 +99,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\n\ta.date,\n\ta.net_worth as \"Net Worth\"\nfrom hledger.net_worth a\nwhere \n\ta.currency = '${commodity}'\n",
+          "rawSql": "select\n\ta.date,\n\ta.net_worth as \"Net Worth\"\nfrom hledger.net_worth a\nwhere \n\ta.currency = '${commodity}' and\n\ta.date < '${__to:date:yyyy-MM-DD}'\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -202,7 +202,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\n\ta.date,\n\ta.balance / b.daily_expense as short_runaway\nfrom (\n\tselect\n\t\ta.date,\n\t\tsum(a.balance) as balance\n\tfrom hledger.balance_to_date_converted a \n\tjoin hledger.assets_classification b on\n\t\ta.account = b.account and\n\t\tb.classification in (\n\t\t\t'Cash',  \n\t\t\t'Savings'\n\t\t) \n\twhere\n\t\ta.currency = '${commodity}'\n\tgroup by\n\t\ta.date\t\n) a\njoin hledger.average_daily_expenses b on\n\ta.date = b.date\nwhere\n\tb.currency = '${commodity}' and\n\tb.daily_expense is not null\n",
+          "rawSql": "select\n\ta.date,\n\ta.balance / b.daily_expense as short_runaway\nfrom (\n\tselect\n\t\ta.date,\n\t\tsum(a.balance) as balance\n\tfrom hledger.balance_to_date_converted a \n\tjoin hledger.assets_classification b on\n\t\ta.account = b.account and\n\t\tb.classification in (\n\t\t\t'Cash',  \n\t\t\t'Savings'\n\t\t) \n\twhere\n\t\ta.currency = '${commodity}'\n\tgroup by\n\t\ta.date\t\n) a\njoin hledger.average_daily_expenses b on\n\ta.date = b.date\nwhere\n\tb.currency = '${commodity}' and\n\tb.daily_expense is not null and\n\ta.date < '${__to:date:yyyy-MM-DD}'\n\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -292,7 +292,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\n\ta.date,\n\ta.balance / b.daily_expense as long_runaway\nfrom hledger.balance_to_date_converted a\njoin hledger.average_daily_expenses b on\n\ta.date = b.date and\n\ta.currency = b.currency\nwhere\n\ta.account = 'Assets' and\n\ta.currency = '${commodity}' and\n\tb.daily_expense is not null\n",
+          "rawSql": "select\n\ta.date,\n\ta.balance / b.daily_expense as long_runaway\nfrom hledger.balance_to_date_converted a\njoin hledger.average_daily_expenses b on\n\ta.date = b.date and\n\ta.currency = b.currency\nwhere\n\ta.account = 'Assets' and\n\ta.currency = '${commodity}' and\n\tb.daily_expense is not null and\n\ta.date < '${__to:date:yyyy-MM-DD}'\n\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -382,7 +382,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\n\ta.date,\n\ta.net_worth / (b.daily_expense * 365 * 25) as fire_percentage\nfrom hledger.net_worth a\njoin hledger.average_daily_expenses b on\n\ta.date = b.date and\n\ta.currency = b.currency\nwhere\n\ta.currency = '${commodity}'",
+          "rawSql": "select\n\ta.date,\n\ta.net_worth / (b.daily_expense * 365 * 25) as fire_percentage\nfrom hledger.net_worth a\njoin hledger.average_daily_expenses b on\n\ta.date = b.date and\n\ta.currency = b.currency\nwhere\n\ta.currency = '${commodity}' and\n\ta.date < '${__to:date:yyyy-MM-DD}'\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -467,7 +467,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\n\ta.date,\n\tb.net_worth,\n\t0 as baseline,\n\t-1 * a.daily_income * 365 * ${age:raw} / 10 / 2 as under_wealth,\n\t-1 * a.daily_income * 365 * ${age:raw} / 10 as expected_wealth,\n\t-1 * a.daily_income * 365 * ${age:raw} / 10 * 2 as over_wealth\nfrom hledger.average_daily_income a\njoin hledger.net_worth b on\n\ta.date = b.date and\n\ta.currency = b.currency\nwhere\n\ta.currency = '${commodity}'\n",
+          "rawSql": "select\n\ta.date,\n\tb.net_worth,\n\t0 as baseline,\n\t-1 * a.daily_income * 365 * ${age:raw} / 10 / 2 as under_wealth,\n\t-1 * a.daily_income * 365 * ${age:raw} / 10 as expected_wealth,\n\t-1 * a.daily_income * 365 * ${age:raw} / 10 * 2 as over_wealth\nfrom hledger.average_daily_income a\njoin hledger.net_worth b on\n\ta.date = b.date and\n\ta.currency = b.currency\nwhere\n\ta.currency = '${commodity}' and\n\ta.date < '${__to:date:yyyy-MM-DD}'\n\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -605,7 +605,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\n  a.date,\n\tb.classification,\n\tsum(balance) as amount\nfrom hledger.balance_to_date_converted a\njoin hledger.assets_classification b on\n\ta.account = b.account\nwhere\n\tcurrency = '${commodity}' \ngroup by\n\ta.date,\n\tb.classification\norder by\n\ta.date",
+          "rawSql": "select\n  a.date,\n\tb.classification,\n\tsum(balance) as amount\nfrom hledger.balance_to_date_converted a\njoin hledger.assets_classification b on\n\ta.account = b.account\nwhere\n\tcurrency = '${commodity}' and\n\ta.date < '${__to:date:yyyy-MM-DD}'\ngroup by\n\ta.date,\n\tb.classification\norder by\n\ta.date",
           "refId": "A",
           "sql": {
             "columns": [
@@ -800,7 +800,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\r\n\ta.date,\r\n\ta.daily_expense as \"Expenses\",\r\n\t-1 * b.daily_income as \"Income\",\r\n\t1 - ((-1 * a.daily_expense) / b.daily_income) as \"Ratio\"\r\nfrom hledger.average_daily_expenses a\r\njoin hledger.average_daily_income b on\r\n\ta.date = b.date and\r\n\ta.currency = b.currency\r\nwhere\r\n\ta.daily_expense is not null and\r\n\tb.daily_income is not null and\r\n\ta.currency = '${commodity}' ",
+          "rawSql": "select\r\n\ta.date,\r\n\ta.daily_expense as \"Expenses\",\r\n\t-1 * b.daily_income as \"Income\",\r\n\t1 - ((-1 * a.daily_expense) / b.daily_income) as \"Ratio\"\r\nfrom hledger.average_daily_expenses a\r\njoin hledger.average_daily_income b on\r\n\ta.date = b.date and\r\n\ta.currency = b.currency\r\nwhere\r\n\ta.daily_expense is not null and\r\n\tb.daily_income is not null and\r\n\ta.currency = '${commodity}'  and\r\n\ta.date < '${__to:date:yyyy-MM-DD}'\r\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -904,7 +904,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\r\n\ta.date,\r\n\t-1 * sum(balance) / ${credit_limit} as \"Ratio\"\r\nfrom hledger.balance_to_date_converted a\r\nwhere\r\n\ta.currency = '${commodity}' and\r\n\ta.account = 'Liabilities'\r\ngroup by\r\n\ta.date\r\norder by\r\n\ta.date",
+          "rawSql": "select\r\n\ta.date,\r\n\t-1 * sum(balance) / ${credit_limit} as \"Ratio\"\r\nfrom hledger.balance_to_date_converted a\r\nwhere\r\n\ta.currency = '${commodity}' and\r\n\ta.account = 'Liabilities' and\r\n\ta.date < '${__to:date:yyyy-MM-DD}'\r\ngroup by\r\n\ta.date\r\norder by\r\n\ta.date",
           "refId": "A",
           "sql": {
             "columns": [
@@ -2679,8 +2679,8 @@
     ]
   },
   "time": {
-    "from": "now/y",
-    "to": "now"
+    "from": "2008-01-01T00:00:00.000Z",
+    "to": "2010-01-01T00:00:00.000Z"
   },
   "timeRangeUpdatedDuringEditOrView": false,
   "timepicker": {},
