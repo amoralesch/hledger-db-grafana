@@ -171,13 +171,3 @@ following files:
 * `secrets/database.ini`: Used by the python script.
 * `grafana/provisioning/datasources/datasource.yml`: Used by Grafana to
   connect to the DB.
-
-## Improvements
-
-The following is a list of things to try whenever there is time:
-
-* Use hledger `--conf` flag to read default ledger file? Or modify python
-  script so that if `MAIN_LEDGER` is `None`, it doesn't use the `-f` flag.
-* In export script, allow to pass a date and only re-import starting from
-  it (note: the individual scripts already allow for this).
-* Remove option to edit dashboards in Grafana?
