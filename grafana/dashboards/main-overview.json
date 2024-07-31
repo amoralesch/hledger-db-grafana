@@ -82,7 +82,7 @@
         "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [],
-          "fields": "/^Net Worth$/",
+          "fields": "/^net_worth$/",
           "values": false
         },
         "showPercentChange": false,
@@ -99,7 +99,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\n\ta.date,\n\ta.net_worth as \"Net Worth\"\nfrom hledger.net_worth a\nwhere \n\ta.currency = '${commodity}' and\n\ta.date <= '${__to:date:yyyy-MM-DD}'\n",
+          "rawSql": "select\n\ta.date,\n\tb.net_worth,\n\t0 as baseline,\n\t-1 * a.daily_income * 365 * ${age:raw} / 10 / 2 as under_wealth,\n\t-1 * a.daily_income * 365 * ${age:raw} / 10 as expected_wealth,\n\t-1 * a.daily_income * 365 * ${age:raw} / 10 * 2 as over_wealth\nfrom hledger.average_daily_income a\njoin hledger.net_worth b on\n\ta.date = b.date and\n\ta.currency = b.currency\nwhere\n\ta.currency = '${commodity}' and\n\ta.date <= '${__to:date:yyyy-MM-DD}'\n\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -123,12 +123,48 @@
       "title": "Net Worth",
       "transformations": [
         {
-          "id": "sortBy",
+          "id": "configFromData",
           "options": {
-            "fields": {},
-            "sort": [
+            "configRefId": "A",
+            "mappings": [
               {
-                "field": "date"
+                "fieldName": "date",
+                "handlerKey": "__ignore"
+              },
+              {
+                "fieldName": "net_worth",
+                "handlerKey": "field.value"
+              },
+              {
+                "fieldName": "baseline",
+                "handlerKey": "threshold1"
+              },
+              {
+                "fieldName": "under_wealth",
+                "handlerArguments": {
+                  "threshold": {
+                    "color": "orange"
+                  }
+                },
+                "handlerKey": "threshold1"
+              },
+              {
+                "fieldName": "expected_wealth",
+                "handlerArguments": {
+                  "threshold": {
+                    "color": "yellow"
+                  }
+                },
+                "handlerKey": "threshold1"
+              },
+              {
+                "fieldName": "over_wealth",
+                "handlerArguments": {
+                  "threshold": {
+                    "color": "green"
+                  }
+                },
+                "handlerKey": "threshold1"
               }
             ]
           }
@@ -667,7 +703,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Ratio"
+              "options": "Expense Ratio"
             },
             "properties": [
               {
@@ -694,70 +730,6 @@
                     {
                       "color": "red",
                       "value": 0.75
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Expenses"
-            },
-            "properties": [
-              {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "green",
-                      "value": null
-                    },
-                    {
-                      "color": "yellow",
-                      "value": 1500
-                    },
-                    {
-                      "color": "#EAB839",
-                      "value": 4000
-                    },
-                    {
-                      "color": "red",
-                      "value": 10000
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Income"
-            },
-            "properties": [
-              {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "red",
-                      "value": null
-                    },
-                    {
-                      "color": "#EAB839",
-                      "value": 6500
-                    },
-                    {
-                      "color": "orange",
-                      "value": 8500
-                    },
-                    {
-                      "color": "green",
-                      "value": 13000
                     }
                   ]
                 }
@@ -800,7 +772,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\r\n\ta.date,\r\n\ta.daily_expense as \"Expenses\",\r\n\t-1 * b.daily_income as \"Income\",\r\n\t1 - ((-1 * a.daily_expense) / b.daily_income) as \"Ratio\"\r\nfrom hledger.average_daily_expenses a\r\njoin hledger.average_daily_income b on\r\n\ta.date = b.date and\r\n\ta.currency = b.currency\r\nwhere\r\n\ta.daily_expense is not null and\r\n\tb.daily_income is not null and\r\n\ta.currency = '${commodity}'  and\r\n\ta.date <= '${__to:date:yyyy-MM-DD}'\r\n",
+          "rawSql": "select\r\n\ta.date,\r\n\ta.daily_expense as \"Expenses\",\r\n\t-1 * b.daily_income as \"Income\",\r\n\t((-1 * a.daily_expense) / b.daily_income) as \"Expense Ratio\"\r\nfrom hledger.average_daily_expenses a\r\njoin hledger.average_daily_income b on\r\n\ta.date = b.date and\r\n\ta.currency = b.currency\r\nwhere\r\n\ta.daily_expense is not null and\r\n\tb.daily_income is not null and\r\n\ta.currency = '${commodity}'  and\r\n\ta.date <= '${__to:date:yyyy-MM-DD}'\r\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -1215,7 +1187,7 @@
             "percent"
           ]
         },
-        "pieType": "pie",
+        "pieType": "donut",
         "reduceOptions": {
           "calcs": [
             "firstNotNull"
@@ -2330,8 +2302,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -2448,8 +2419,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "red",
-                    "value": null
+                    "color": "red"
                   },
                   {
                     "color": "transparent",
@@ -2659,7 +2629,7 @@
     ]
   },
   "time": {
-    "from": "2008-01-01T00:00:00.000Z",
+    "from": "now/y",
     "to": "now"
   },
   "timeRangeUpdatedDuringEditOrView": false,
