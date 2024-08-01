@@ -121,14 +121,17 @@ def calculate_balances(
 
 
 def get_credit_debits(
+        file: str = None
         ) -> dict[str, dict[tuple[str, str], tuple[Decimal, Decimal]]]:
-    postings = raw_postings()
+    postings = raw_postings(file=file)
 
     return preprocess_group_credits_debits(postings)
 
 
-def run_process(date: str = None) -> None:
-    credits_debits = get_credit_debits()
+def run_process(
+        file: str = None,
+        date: str = None) -> None:
+    credits_debits = get_credit_debits(file=file)
     all_balances = calculate_balances(credits_debits)
     filter_dates(date, all_balances)
 

@@ -1292,6 +1292,18 @@
       "title": "Cost Allocation",
       "transformations": [
         {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "desc": true,
+                "field": "amount"
+              }
+            ]
+          }
+        },
+        {
           "id": "groupingToMatrix",
           "options": {
             "columnField": "classification",
@@ -2516,7 +2528,7 @@
     "list": [
       {
         "current": {
-          "selected": false,
+          "selected": true,
           "text": "USD",
           "value": "USD"
         },

@@ -203,8 +203,10 @@ def calculate_fx_rates(
     return rates
 
 
-def run_process(date: str = None) -> None:
-    raw_prices = prices()
+def run_process(
+        file: str = None,
+        date: str = None) -> None:
+    raw_prices = prices(file=file)
     rates = calculate_fx_rates(date, raw_prices)
 
     with Connection() as connection:
