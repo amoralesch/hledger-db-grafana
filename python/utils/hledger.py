@@ -2,8 +2,6 @@ import csv
 import io
 import subprocess
 
-MAIN_LEDGER = "../ledger/hledger.all.journal"
-
 
 def hledger_command(args, file: str = None):
     """
@@ -17,8 +15,6 @@ def hledger_command(args, file: str = None):
 
     if file is not None:
         real_args.extend(['-f', file])
-    else:
-        real_args.extend(['-f', MAIN_LEDGER])
 
     proc = subprocess.run(real_args, check=True, capture_output=True)
 
