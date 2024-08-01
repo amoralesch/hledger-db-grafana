@@ -77,15 +77,18 @@ def calculate_deltas(
 
 
 def get_credit_debits(
+        file: str = None,
         date: str = None
         ) -> dict[str, dict[tuple[str, str], tuple[Decimal, Decimal]]]:
-    postings = raw_postings(date)
+    postings = raw_postings(file=file, date=date)
 
     return preprocess_group_credits_debits(postings)
 
 
-def run_process(date: str = None) -> None:
-    credits_debits = get_credit_debits(date)
+def run_process(
+        file: str = None,
+        date: str = None) -> None:
+    credits_debits = get_credit_debits(file, date)
     all_deltas = calculate_deltas(credits_debits)
 
     with Connection() as connection:

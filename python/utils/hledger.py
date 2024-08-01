@@ -5,30 +5,31 @@ import subprocess
 MAIN_LEDGER = "../ledger/hledger.all.journal"
 
 
-def hledger_command(args):
+def hledger_command(args, file: str = None):
     """
     Run a hledger command, throw an error if it fails,
     and return the stdout
     """
     print(f'Running hledger command: {args[0]}')
 
-    ledger_file = MAIN_LEDGER
-    real_args = [
-        "hledger",
-        "-f",
-        ledger_file
-    ]
+    real_args = ["hledger"]
     real_args.extend(args)
+
+    if file is not None:
+        real_args.extend(['-f', file])
+    else:
+        real_args.extend(['-f', MAIN_LEDGER])
+
     proc = subprocess.run(real_args, check=True, capture_output=True)
 
     return proc.stdout.decode("utf-8")
 
 
-def prices() -> list[str]:
+def prices(file: str = None) -> list[str]:
     """ Return the list of prices, both implicit and explicit. """
     args = ["prices", '--infer-market-prices']
 
-    return hledger_command(args).splitlines()
+    return hledger_command(args, file).splitlines()
 
 
 def current_commodites() -> list[str]:
@@ -52,7 +53,9 @@ def current_commodites() -> list[str]:
     return set(commodities)
 
 
-def raw_postings(date: str = None) -> list[dict[str, str]]:
+def raw_postings(
+        file: str = None,
+        date: str = None) -> list[dict[str, str]]:
     # [
     #   {
     #     'field_name': 'value',
@@ -65,4 +68,4 @@ def raw_postings(date: str = None) -> list[dict[str, str]]:
     if date is not None:
         args.extend(['-b', date])
 
-    return list(csv.DictReader(io.StringIO(hledger_command(args))))
+    return list(csv.DictReader(io.StringIO(hledger_command(args, file))))
