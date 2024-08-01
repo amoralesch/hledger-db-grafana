@@ -52,14 +52,14 @@ _Retirement_. See the example already included.
 
 Modify the following _python_ scripts:
 
-* `hledger.py` -> `MAIN_LEDGER`
-
-  Relative or absolute path to the main ledger file to read.
-
 * `fx_rates.py` -> `MAIN_CURRENCIES`
 
   Set the same list of _main_ commodities as in the previous CSV file
   (`postgres/csv/main_commodities.csv`)
+
+* **Optional**: `hledger.py` -> `MAIN_LEDGER`
+
+  Relative or absolute path to the main ledger file to read.
 
 ## Installation
 
@@ -69,7 +69,12 @@ Modify the following _python_ scripts:
     * PostgreSQL, running on port 5432;
     * pgAdmin, running on port 5050, used for testing SQL queries;
     * Grafana, running on port 3000.
-4. Execute script `./shell/export.sh`.
+4. Execute export script, you have 2 options:
+    * `./shell/export.sh`: It will get the information from the default
+      ledger file configured inside `hledger.py` file, `MAIN_LEDGER`
+      variable;
+    * `./shell/export.sh -f {ledger_file}`: Use `{ledger_file}` as the
+      main hledger journal file to get info from.
 5. Once is done, open browser pointing to `http://localhost:3000/`.
 6. There should be a dashboard created named _Main Overview_, open it and
    all the panel should display your information.
