@@ -10,10 +10,17 @@ parser.add_argument(
     nargs='?',
     help='hledger journal',
     required=False)
+parser.add_argument(
+    '-b',
+    '--begin',
+    nargs='?',
+    help='begin date',
+    required=False)
 args = parser.parse_args()
 
 ledger_file = args.file
+start_date = args.begin
 
-balance_to_date.run_process(file=ledger_file)
-daily_deltas.run_process(file=ledger_file)
-fx_rates.run_process(file=ledger_file)
+balance_to_date.run_process(file=ledger_file, date=start_date)
+daily_deltas.run_process(file=ledger_file, date=start_date)
+fx_rates.run_process(file=ledger_file, date=start_date)
