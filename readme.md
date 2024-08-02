@@ -74,8 +74,10 @@ Modify the following _python_ scripts:
     * Taken from the [manual](https://hledger.org/dev/hledger.html#input):
       hledger looks for `.hledger.journal` in your home directory, or the
       `LEDGER_FILE` environment variable.
-    * If you want to specify a different journal file, use the `-f` /
-      `--file` flag like: `./shell/export.sh -f {ledger_file}`.
+    * If you want to specify a different journal file, use the `-f` flag
+      like: `./shell/export.sh -f {ledger_file}`.
+    * If you only want to load information _after_ certain date, use the
+      `-b` flag like: `./shell/export.sh -b 2024`.
 5. Once is done, open browser pointing to `http://localhost:3000/`.
 6. There should be a dashboard created named _Main Overview_, open it and
    all the panel should display your information.
