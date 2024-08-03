@@ -57,10 +57,6 @@ Modify the following _python_ scripts:
   Set the same list of _main_ commodities as in the previous CSV file
   (`postgres/csv/main_commodities.csv`)
 
-* **Optional**: `hledger.py` -> `MAIN_LEDGER`
-
-  Relative or absolute path to the main ledger file to read.
-
 ## Installation
 
 1. Clone this repo.
@@ -78,10 +74,10 @@ Modify the following _python_ scripts:
       like: `./shell/export.sh -f {ledger_file}`.
     * If you only want to load information _after_ certain date, use the
       `-b` flag like: `./shell/export.sh -b 2024`.
-5. Once is done, open browser pointing to `http://localhost:3000/`.
+5. Once this is done, open browser pointing to `http://localhost:3000/`.
 6. There should be a dashboard created named _Main Overview_, open it and
    all the panel should display your information.
-7. Once all is done, close the containers with `docker compose down`.
+7. Once all is done, terminate the containers with `docker compose down`.
     * Optionally, you can run `docker compose down -v` to also delete all
       the volumes created, but if you do this, when you start the
       containers again, you will need to re-run the export file.
