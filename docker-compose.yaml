@@ -36,6 +36,7 @@ services:
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning
       - ./grafana/dashboards:/var/lib/grafana/dashboards
+      - ./hledger-dump.db:/data/sqlite3.db
       - grafana-data:/var/lib/grafana
     environment:
       GF_INSTALL_PLUGINS: marcusolsson-treemap-panel,frser-sqlite-datasource
