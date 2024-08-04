@@ -1,6 +1,7 @@
 from decimal import Decimal
 import sqlite3
 import os
+import csv
 
 DUMP_FILE = 'hledger-dump.db'
 
@@ -17,6 +18,31 @@ def init_db(conn):
     # # views:
     # with open('sqlite/3-views.sql', 'r') as sql:
     #     conn.executescript(sql.read())
+
+    # XXX: TODO: add these files to the main export? so that they are
+    #  loaded everytime the script is run?
+    # data:
+    ASSETS = 'sqlite/csv/assets_classification.csv'
+    with open(ASSETS, 'r') as csv_file:
+        csv_reader = csv.reader(csv_file)
+        next(csv_reader)  # Read the header row
+
+        for row in csv_reader:
+            conn.execute('''
+                INSERT INTO assets_classification (account, classification)
+                VALUES (?, ?)
+            ''', row)
+
+    COMMODITIES = 'sqlite/csv/main_commodities.csv'
+    with open(COMMODITIES, 'r') as csv_file:
+        csv_reader = csv.reader(csv_file)
+        next(csv_reader)  # Read the header row
+
+        for row in csv_reader:
+            conn.execute('''
+                INSERT INTO main_commodities (currency, name)
+                VALUES (?, ?)
+            ''', row)
 
     # indexes:
     with open('sqlite/5-indexes.sql', 'r') as sql:
