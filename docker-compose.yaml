@@ -38,7 +38,7 @@ services:
       - ./grafana/dashboards:/var/lib/grafana/dashboards
       - grafana-data:/var/lib/grafana
     environment:
-      GF_INSTALL_PLUGINS: marcusolsson-treemap-panel
+      GF_INSTALL_PLUGINS: marcusolsson-treemap-panel,frser-sqlite-datasource
 
 volumes:
   postgres-data:
