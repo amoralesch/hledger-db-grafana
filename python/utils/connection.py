@@ -14,10 +14,9 @@ def init_db(conn):
     with open('sqlite/2-tables.sql', 'r') as sql:
         conn.executescript(sql.read())
 
-    # Check about LAG function (used for average calculations)
-    # # views:
-    # with open('sqlite/3-views.sql', 'r') as sql:
-    #     conn.executescript(sql.read())
+    # views:
+    with open('sqlite/3-views.sql', 'r') as sql:
+        conn.executescript(sql.read())
 
     # XXX: TODO: add these files to the main export? so that they are
     #  loaded everytime the script is run?
