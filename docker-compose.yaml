@@ -2,8 +2,6 @@ services:
   grafana:
     image: grafana/grafana
     restart: unless-stopped
-    depends_on:
-      - postgres
     ports:
       - "3000:3000"
     volumes:
