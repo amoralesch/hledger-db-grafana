@@ -1,7 +1,7 @@
 from decimal import Decimal
 from datetime import datetime
 from utils.connection import Connection
-from utils.hledger import raw_postings
+from utils.hledger import Hledger
 from utils.utils import filter_dates, date_range
 
 
@@ -77,18 +77,20 @@ def calculate_deltas(
 
 
 def get_credit_debits(
+        hledger: Hledger,
         file: str = None,
         date: str = None
         ) -> dict[str, dict[tuple[str, str], tuple[Decimal, Decimal]]]:
-    postings = raw_postings(file=file, date=date)
+    postings = hledger.raw_postings(file=file, date=date)
 
     return preprocess_group_credits_debits(postings)
 
 
 def run_process(
+        hledger: Hledger,
         file: str = None,
         date: str = None) -> None:
-    credits_debits = get_credit_debits(file, date)
+    credits_debits = get_credit_debits(hledger, file, date)
     all_deltas = calculate_deltas(credits_debits)
 
     with Connection() as connection:
@@ -96,5 +98,4 @@ def run_process(
 
 
 if __name__ == '__main__':
-    run_process()
-    # run_process(date='2024-07-01')
+    run_process(Hledger())
