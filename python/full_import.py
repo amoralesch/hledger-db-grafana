@@ -2,6 +2,7 @@ import balance_to_date
 import daily_deltas
 import fx_rates
 import argparse
+from utils.hledger import Hledger
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -28,6 +29,8 @@ ledger_file = args.file
 start_date = args.begin
 depth_level = args.depth
 
-balance_to_date.run_process(file=ledger_file, date=start_date)
-daily_deltas.run_process(file=ledger_file, date=start_date)
-fx_rates.run_process(file=ledger_file, date=start_date)
+hledger = Hledger()
+
+balance_to_date.run_process(hledger, file=ledger_file, date=start_date)
+daily_deltas.run_process(hledger, file=ledger_file, date=start_date)
+fx_rates.run_process(hledger, file=ledger_file, date=start_date)

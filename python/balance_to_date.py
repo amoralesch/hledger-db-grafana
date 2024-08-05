@@ -1,7 +1,7 @@
 from decimal import Decimal
 from datetime import datetime
 from utils.connection import Connection
-from utils.hledger import raw_postings
+from utils.hledger import Hledger
 from utils.utils import filter_dates, date_range
 
 
@@ -121,17 +121,19 @@ def calculate_balances(
 
 
 def get_credit_debits(
+        hledger: Hledger,
         file: str = None
         ) -> dict[str, dict[tuple[str, str], tuple[Decimal, Decimal]]]:
-    postings = raw_postings(file=file)
+    postings = hledger.raw_postings(file=file)
 
     return preprocess_group_credits_debits(postings)
 
 
 def run_process(
+        hledger: Hledger,
         file: str = None,
         date: str = None) -> None:
-    credits_debits = get_credit_debits(file=file)
+    credits_debits = get_credit_debits(hledger, file=file)
     all_balances = calculate_balances(credits_debits)
     filter_dates(date, all_balances)
 
@@ -140,5 +142,4 @@ def run_process(
 
 
 if __name__ == '__main__':
-    run_process()
-    # run_process(date='2024-01-01')
+    run_process(Hledger())
