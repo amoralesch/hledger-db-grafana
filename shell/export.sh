@@ -19,7 +19,6 @@ python3 --version
 # Create virtual environment
 python3 -m venv venv
 source venv/bin/activate
-pip install -r ./python/requirements.txt
 
 python3 ./python/full_import.py -f ${ledger_file} -b ${start_date}
 

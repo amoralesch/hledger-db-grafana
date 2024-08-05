@@ -35,8 +35,8 @@
     },
     {
       "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "pgds"
+        "type": "grafana-sqlite-datasource",
+        "uid": "sqlite-ds"
       },
       "fieldConfig": {
         "defaults": {
@@ -93,13 +93,13 @@
       "targets": [
         {
           "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "pgds"
+            "type": "grafana-sqlite-datasource",
+            "uid": "sqlite-ds"
           },
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\n\ta.date,\n\tb.net_worth,\n\t0 as baseline,\n\t-1 * a.daily_income * 365 * ${age:raw} / 10 / 2 as under_wealth,\n\t-1 * a.daily_income * 365 * ${age:raw} / 10 as expected_wealth,\n\t-1 * a.daily_income * 365 * ${age:raw} / 10 * 2 as over_wealth\nfrom hledger.average_daily_income a\njoin hledger.net_worth b on\n\ta.date = b.date and\n\ta.currency = b.currency\nwhere\n\ta.currency = '${commodity}' and\n\ta.date <= '${__to:date:yyyy-MM-DD}'\n\n",
+          "rawSql": "select\n\ta.date,\n\tb.net_worth,\n\t0 as baseline,\n\t-1 * a.daily_income * 365 * ${age:raw} / 10 / 2 as under_wealth,\n\t-1 * a.daily_income * 365 * ${age:raw} / 10 as expected_wealth,\n\t-1 * a.daily_income * 365 * ${age:raw} / 10 * 2 as over_wealth\nfrom average_daily_income a\njoin net_worth b on\n\ta.date = b.date and\n\ta.currency = b.currency\nwhere\n\ta.currency = '${commodity}' and\n\ta.date <= '${__to:date:yyyy-MM-DD}'\n\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -174,8 +174,8 @@
     },
     {
       "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "pgds"
+        "type": "grafana-sqlite-datasource",
+        "uid": "sqlite-ds"
       },
       "fieldConfig": {
         "defaults": {
@@ -232,13 +232,13 @@
       "targets": [
         {
           "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "pgds"
+            "type": "grafana-sqlite-datasource",
+            "uid": "sqlite-ds"
           },
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\n\ta.date,\n\ta.balance / b.daily_expense as short_runaway\nfrom (\n\tselect\n\t\ta.date,\n\t\tsum(a.balance) as balance\n\tfrom hledger.balance_to_date_converted a \n\tjoin hledger.assets_classification b on\n\t\ta.account = b.account and\n\t\tb.classification in (\n\t\t\t'Cash',  \n\t\t\t'Savings'\n\t\t) \n\twhere\n\t\ta.currency = '${commodity}'\n\tgroup by\n\t\ta.date\t\n) a\njoin hledger.average_daily_expenses b on\n\ta.date = b.date\nwhere\n\tb.currency = '${commodity}' and\n\tb.daily_expense is not null and\n\ta.date <= '${__to:date:yyyy-MM-DD}'\n\n",
+          "rawSql": "select\n\ta.date,\n\ta.balance / b.daily_expense as short_runaway\nfrom (\n\tselect\n\t\ta.date,\n\t\tsum(a.balance) as balance\n\tfrom balance_to_date_converted a \n\tjoin assets_classification b on\n\t\ta.account = b.account and\n\t\tb.classification in (\n\t\t\t'Cash',  \n\t\t\t'Savings'\n\t\t) \n\twhere\n\t\ta.currency = '${commodity}'\n\tgroup by\n\t\ta.date\t\n) a\njoin average_daily_expenses b on\n\ta.date = b.date\nwhere\n\tb.currency = '${commodity}' and\n\tb.daily_expense is not null and\n\ta.date <= '${__to:date:yyyy-MM-DD}'\n\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -264,8 +264,8 @@
     },
     {
       "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "pgds"
+        "type": "grafana-sqlite-datasource",
+        "uid": "sqlite-ds"
       },
       "fieldConfig": {
         "defaults": {
@@ -322,13 +322,13 @@
       "targets": [
         {
           "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "pgds"
+            "type": "grafana-sqlite-datasource",
+            "uid": "sqlite-ds"
           },
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\n\ta.date,\n\ta.balance / b.daily_expense as long_runaway\nfrom hledger.balance_to_date_converted a\njoin hledger.average_daily_expenses b on\n\ta.date = b.date and\n\ta.currency = b.currency\nwhere\n\ta.account = 'Assets' and\n\ta.currency = '${commodity}' and\n\tb.daily_expense is not null and\n\ta.date <= '${__to:date:yyyy-MM-DD}'\n",
+          "rawSql": "select\n\ta.date,\n\ta.balance / b.daily_expense as long_runaway\nfrom balance_to_date_converted a\njoin average_daily_expenses b on\n\ta.date = b.date and\n\ta.currency = b.currency\nwhere\n\ta.account = 'Assets' and\n\ta.currency = '${commodity}' and\n\tb.daily_expense is not null and\n\ta.date <= '${__to:date:yyyy-MM-DD}'\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -354,8 +354,8 @@
     },
     {
       "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "pgds"
+        "type": "grafana-sqlite-datasource",
+        "uid": "sqlite-ds"
       },
       "fieldConfig": {
         "defaults": {
@@ -412,13 +412,13 @@
       "targets": [
         {
           "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "pgds"
+            "type": "grafana-sqlite-datasource",
+            "uid": "sqlite-ds"
           },
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\n\ta.date,\n\ta.net_worth / (b.daily_expense * 365 * 25) as fire_percentage\nfrom hledger.net_worth a\njoin hledger.average_daily_expenses b on\n\ta.date = b.date and\n\ta.currency = b.currency\nwhere\n\ta.currency = '${commodity}' and\n\ta.date <= '${__to:date:yyyy-MM-DD}'\n",
+          "rawSql": "select\n\ta.date,\n\ta.net_worth / (b.daily_expense * 365 * 25) as fire_percentage\nfrom net_worth a\njoin average_daily_expenses b on\n\ta.date = b.date and\n\ta.currency = b.currency\nwhere\n\ta.currency = '${commodity}' and\n\ta.date <= '${__to:date:yyyy-MM-DD}'\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -444,8 +444,8 @@
     },
     {
       "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "pgds"
+        "type": "grafana-sqlite-datasource",
+        "uid": "sqlite-ds"
       },
       "fieldConfig": {
         "defaults": {
@@ -497,13 +497,13 @@
       "targets": [
         {
           "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "pgds"
+            "type": "grafana-sqlite-datasource",
+            "uid": "sqlite-ds"
           },
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\n\ta.date,\n\tb.net_worth,\n\t0 as baseline,\n\t-1 * a.daily_income * 365 * ${age:raw} / 10 / 2 as under_wealth,\n\t-1 * a.daily_income * 365 * ${age:raw} / 10 as expected_wealth,\n\t-1 * a.daily_income * 365 * ${age:raw} / 10 * 2 as over_wealth\nfrom hledger.average_daily_income a\njoin hledger.net_worth b on\n\ta.date = b.date and\n\ta.currency = b.currency\nwhere\n\ta.currency = '${commodity}' and\n\ta.date <= '${__to:date:yyyy-MM-DD}'\n\n",
+          "rawSql": "select\n\ta.date,\n\tb.net_worth,\n\t0 as baseline,\n\t-1 * a.daily_income * 365 * ${age:raw} / 10 / 2 as under_wealth,\n\t-1 * a.daily_income * 365 * ${age:raw} / 10 as expected_wealth,\n\t-1 * a.daily_income * 365 * ${age:raw} / 10 * 2 as over_wealth\nfrom average_daily_income a\njoin net_worth b on\n\ta.date = b.date and\n\ta.currency = b.currency\nwhere\n\ta.currency = '${commodity}' and\n\ta.date <= '${__to:date:yyyy-MM-DD}'\n\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -582,8 +582,8 @@
     },
     {
       "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "pgds"
+        "type": "grafana-sqlite-datasource",
+        "uid": "sqlite-ds"
       },
       "fieldConfig": {
         "defaults": {
@@ -635,13 +635,13 @@
       "targets": [
         {
           "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "pgds"
+            "type": "grafana-sqlite-datasource",
+            "uid": "sqlite-ds"
           },
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\n  a.date,\n\tb.classification,\n\tsum(balance) as amount\nfrom hledger.balance_to_date_converted a\njoin hledger.assets_classification b on\n\ta.account = b.account\nwhere\n\tcurrency = '${commodity}' and\n\ta.date <= '${__to:date:yyyy-MM-DD}'\ngroup by\n\ta.date,\n\tb.classification\norder by\n\ta.date",
+          "rawSql": "select\n  a.date,\n\tb.classification,\n\tsum(balance) as amount\nfrom balance_to_date_converted a\njoin assets_classification b on\n\ta.account = b.account\nwhere\n\tcurrency = '${commodity}' and\n\ta.date <= '${__to:date:yyyy-MM-DD}'\ngroup by\n\ta.date,\n\tb.classification\norder by\n\ta.date",
           "refId": "A",
           "sql": {
             "columns": [
@@ -677,8 +677,8 @@
     },
     {
       "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "pgds"
+        "type": "grafana-sqlite-datasource",
+        "uid": "sqlite-ds"
       },
       "description": "",
       "fieldConfig": {
@@ -766,13 +766,13 @@
       "targets": [
         {
           "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "pgds"
+            "type": "grafana-sqlite-datasource",
+            "uid": "sqlite-ds"
           },
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\r\n\ta.date,\r\n\ta.daily_expense as \"Expenses\",\r\n\t-1 * b.daily_income as \"Income\",\r\n\t((-1 * a.daily_expense) / b.daily_income) as \"Expense Ratio\"\r\nfrom hledger.average_daily_expenses a\r\njoin hledger.average_daily_income b on\r\n\ta.date = b.date and\r\n\ta.currency = b.currency\r\nwhere\r\n\ta.daily_expense is not null and\r\n\tb.daily_income is not null and\r\n\ta.currency = '${commodity}'  and\r\n\ta.date <= '${__to:date:yyyy-MM-DD}'\r\n",
+          "rawSql": "select\r\n\ta.date,\r\n\ta.daily_expense as \"Expenses\",\r\n\t-1 * b.daily_income as \"Income\",\r\n\t((-1 * a.daily_expense) / b.daily_income) as \"Expense Ratio\"\r\nfrom average_daily_expenses a\r\njoin average_daily_income b on\r\n\ta.date = b.date and\r\n\ta.currency = b.currency\r\nwhere\r\n\ta.daily_expense is not null and\r\n\tb.daily_income is not null and\r\n\ta.currency = '${commodity}'  and\r\n\ta.date <= '${__to:date:yyyy-MM-DD}'\r\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -798,8 +798,8 @@
     },
     {
       "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "pgds"
+        "type": "grafana-sqlite-datasource",
+        "uid": "sqlite-ds"
       },
       "fieldConfig": {
         "defaults": {
@@ -870,13 +870,13 @@
       "targets": [
         {
           "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "pgds"
+            "type": "grafana-sqlite-datasource",
+            "uid": "sqlite-ds"
           },
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\r\n\ta.date,\r\n\t-1 * sum(balance) / ${credit_limit} as \"Ratio\"\r\nfrom hledger.balance_to_date_converted a\r\nwhere\r\n\ta.currency = '${commodity}' and\r\n\ta.account = 'Liabilities' and\r\n\ta.date <= '${__to:date:yyyy-MM-DD}'\r\ngroup by\r\n\ta.date\r\norder by\r\n\ta.date",
+          "rawSql": "select\r\n\ta.date,\r\n\t-1 * sum(balance) / ${credit_limit} as \"Ratio\"\r\nfrom balance_to_date_converted a\r\nwhere\r\n\ta.currency = '${commodity}' and\r\n\ta.account = 'Liabilities' and\r\n\ta.date <= '${__to:date:yyyy-MM-DD}'\r\ngroup by\r\n\ta.date\r\norder by\r\n\ta.date",
           "refId": "A",
           "sql": {
             "columns": [
@@ -915,8 +915,8 @@
     },
     {
       "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "pgds"
+        "type": "grafana-sqlite-datasource",
+        "uid": "sqlite-ds"
       },
       "fieldConfig": {
         "defaults": {
@@ -1013,13 +1013,13 @@
       "targets": [
         {
           "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "pgds"
+            "type": "grafana-sqlite-datasource",
+            "uid": "sqlite-ds"
           },
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\n\ta.date,\n\tb.classification,\n\tsum(balance) as amount\nfrom hledger.balance_to_date_converted a\njoin hledger.assets_classification b on\n\ta.account = b.account\nwhere\n\tcurrency = '${commodity}' and\n\t$__timeFilter(a.date)\ngroup by\n\ta.date,\n\tb.classification\norder by \n\ta.date",
+          "rawSql": "select\n\ta.date,\n\tb.classification,\n\tsum(balance) as amount\nfrom balance_to_date_converted a\njoin assets_classification b on\n\ta.account = b.account\nwhere\n\tcurrency = '${commodity}' and\n\t$__timeFilter(a.date)\ngroup by\n\ta.date,\n\tb.classification\norder by \n\ta.date",
           "refId": "A",
           "sql": {
             "columns": [
@@ -1067,8 +1067,8 @@
     },
     {
       "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "pgds"
+        "type": "grafana-sqlite-datasource",
+        "uid": "sqlite-ds"
       },
       "fieldConfig": {
         "defaults": {
@@ -1119,13 +1119,13 @@
       "targets": [
         {
           "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "pgds"
+            "type": "grafana-sqlite-datasource",
+            "uid": "sqlite-ds"
           },
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\r\n  a.date,\r\n\tb.classification,\r\n\tsum(balance) as amount\r\nfrom hledger.balance_to_date_converted a\r\njoin hledger.assets_classification b on\r\n\ta.account = b.account\r\nwhere\r\n\tcurrency = '${commodity}' and\r\n\ta.date <= '${__to:date:YYYY-MM-DD}'\r\ngroup by\r\n\ta.date,\r\n\tb.classification\r\norder by \r\n\ta.date desc",
+          "rawSql": "select\r\n  a.date,\r\n\tb.classification,\r\n\tsum(balance) as amount\r\nfrom balance_to_date_converted a\r\njoin assets_classification b on\r\n\ta.account = b.account\r\nwhere\r\n\tcurrency = '${commodity}' and\r\n\ta.date <= '${__to:date:YYYY-MM-DD}'\r\ngroup by\r\n\ta.date,\r\n\tb.classification\r\norder by \r\n\ta.date desc",
           "refId": "A",
           "sql": {
             "columns": [
@@ -1326,8 +1326,8 @@
       "panels": [
         {
           "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "pgds"
+            "type": "grafana-sqlite-datasource",
+            "uid": "sqlite-ds"
           },
           "description": "Debt-to-income (DTI) ratio is the percentage of your monthly gross income that goes to paying your monthly debt payments and is used by lenders to determine your borrowing risk.",
           "fieldConfig": {
@@ -1478,13 +1478,13 @@
           "targets": [
             {
               "datasource": {
-                "type": "grafana-postgresql-datasource",
-                "uid": "pgds"
+                "type": "grafana-sqlite-datasource",
+                "uid": "sqlite-ds"
               },
               "editorMode": "code",
               "format": "table",
               "rawQuery": true,
-              "rawSql": "select\r\n\ta.date,\r\n\t-1 * sum(case when a.account = 'Liabilities' then balance else 0 end) as \"Liabilities\",\r\n\t-1 * sum(case when a.account = 'Income' then balance else 0 end) as \"Income\",\r\n\t(\r\n\t\tsum(case when a.account = 'Liabilities' then balance else 0 end) /\r\n\t\tsum(case when a.account = 'Income' then balance else 0 end)\r\n\t) as \"Ratio\"\r\nfrom hledger.balance_to_date_converted a\r\nwhere\r\n\ta.currency = '${commodity}' and\r\n\ta.account in (\r\n\t\t'Liabilities',\r\n\t\t'Income'\r\n\t) and\r\n\t$__timeFilter(a.date)\r\ngroup by\r\n\ta.date\r\norder by\r\n\ta.date",
+              "rawSql": "select\r\n\ta.date,\r\n\t-1 * sum(case when a.account = 'Liabilities' then balance else 0 end) as \"Liabilities\",\r\n\t-1 * sum(case when a.account = 'Income' then balance else 0 end) as \"Income\",\r\n\t(\r\n\t\tsum(case when a.account = 'Liabilities' then balance else 0 end) /\r\n\t\tsum(case when a.account = 'Income' then balance else 0 end)\r\n\t) as \"Ratio\"\r\nfrom balance_to_date_converted a\r\nwhere\r\n\ta.currency = '${commodity}' and\r\n\ta.account in (\r\n\t\t'Liabilities',\r\n\t\t'Income'\r\n\t) and\r\n\t$__timeFilter(a.date)\r\ngroup by\r\n\ta.date\r\norder by\r\n\ta.date",
               "refId": "A",
               "sql": {
                 "columns": [
@@ -1510,8 +1510,8 @@
         },
         {
           "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "pgds"
+            "type": "grafana-sqlite-datasource",
+            "uid": "sqlite-ds"
           },
           "description": "The debt-to-net worth formula is a good one to be familiar with, as it can shed light on how financially healthy you are -- for you or for anyone assessing your financial condition.",
           "fieldConfig": {
@@ -1661,13 +1661,13 @@
           "targets": [
             {
               "datasource": {
-                "type": "grafana-postgresql-datasource",
-                "uid": "pgds"
+                "type": "grafana-sqlite-datasource",
+                "uid": "sqlite-ds"
               },
               "editorMode": "code",
               "format": "table",
               "rawQuery": true,
-              "rawSql": "select\r\n\ta.date,\r\n\t-1 * sum(case when a.account = 'Liabilities' then balance else 0 end) as \"Liabilities\",\r\n\tsum(balance) as \"Net Worth\",\r\n\t(\r\n\t\t(-1 * sum(case when a.account = 'Liabilities' then balance else 0 end)) /\r\n\t\tsum(balance)\r\n\t) as \"Ratio\"\r\nfrom hledger.balance_to_date_converted a\r\nwhere\r\n\ta.currency = '${commodity}' and\r\n\ta.account in (\r\n\t\t'Liabilities',\r\n\t\t'Assets'\r\n\t) and\r\n\t$__timeFilter(a.date)\r\ngroup by\r\n\ta.date\r\norder by\r\n\ta.date",
+              "rawSql": "select\r\n\ta.date,\r\n\t-1 * sum(case when a.account = 'Liabilities' then balance else 0 end) as \"Liabilities\",\r\n\tsum(balance) as \"Net Worth\",\r\n\t(\r\n\t\t(-1 * sum(case when a.account = 'Liabilities' then balance else 0 end)) /\r\n\t\tsum(balance)\r\n\t) as \"Ratio\"\r\nfrom balance_to_date_converted a\r\nwhere\r\n\ta.currency = '${commodity}' and\r\n\ta.account in (\r\n\t\t'Liabilities',\r\n\t\t'Assets'\r\n\t) and\r\n\t$__timeFilter(a.date)\r\ngroup by\r\n\ta.date\r\norder by\r\n\ta.date",
               "refId": "A",
               "sql": {
                 "columns": [
@@ -1693,8 +1693,8 @@
         },
         {
           "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "pgds"
+            "type": "grafana-sqlite-datasource",
+            "uid": "sqlite-ds"
           },
           "description": "The Debt to Asset Ratio, also known as the debt ratio, is a leverage ratio that indicates the percentage of assets financed with debt. The higher the ratio, the greater the leverage and financial risk degree.",
           "fieldConfig": {
@@ -1844,13 +1844,13 @@
           "targets": [
             {
               "datasource": {
-                "type": "grafana-postgresql-datasource",
-                "uid": "pgds"
+                "type": "grafana-sqlite-datasource",
+                "uid": "sqlite-ds"
               },
               "editorMode": "code",
               "format": "table",
               "rawQuery": true,
-              "rawSql": "select\r\n\ta.date,\r\n\t-1 * sum(case when a.account = 'Liabilities' then balance else 0 end) as \"Liabilities\",\r\n\tsum(case when a.account = 'Assets' then balance else 0 end) as \"Assets\",\r\n\t(\r\n\t\t(-1 * sum(case when a.account = 'Liabilities' then balance else 0 end)) /\r\n\t\tsum(case when a.account = 'Assets' then balance else 0 end)\r\n\t) as \"Ratio\"\r\nfrom hledger.balance_to_date_converted a\r\nwhere\r\n\ta.currency = '${commodity}' and\r\n\ta.account in (\r\n\t\t'Liabilities',\r\n\t\t'Assets'\r\n\t) and\r\n\t$__timeFilter(a.date)\r\ngroup by\r\n\ta.date\r\n",
+              "rawSql": "select\r\n\ta.date,\r\n\t-1 * sum(case when a.account = 'Liabilities' then balance else 0 end) as \"Liabilities\",\r\n\tsum(case when a.account = 'Assets' then balance else 0 end) as \"Assets\",\r\n\t(\r\n\t\t(-1 * sum(case when a.account = 'Liabilities' then balance else 0 end)) /\r\n\t\tsum(case when a.account = 'Assets' then balance else 0 end)\r\n\t) as \"Ratio\"\r\nfrom balance_to_date_converted a\r\nwhere\r\n\ta.currency = '${commodity}' and\r\n\ta.account in (\r\n\t\t'Liabilities',\r\n\t\t'Assets'\r\n\t) and\r\n\t$__timeFilter(a.date)\r\ngroup by\r\n\ta.date\r\n",
               "refId": "A",
               "sql": {
                 "columns": [
@@ -1876,8 +1876,8 @@
         },
         {
           "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "pgds"
+            "type": "grafana-sqlite-datasource",
+            "uid": "sqlite-ds"
           },
           "description": "The cash flow ratio helps you understand what percentage of your income is dedicated to your expenses. Think about the cash flow ratio as how much cash flows in vs flowing out.",
           "fieldConfig": {
@@ -2040,13 +2040,13 @@
           "targets": [
             {
               "datasource": {
-                "type": "grafana-postgresql-datasource",
-                "uid": "pgds"
+                "type": "grafana-sqlite-datasource",
+                "uid": "sqlite-ds"
               },
               "editorMode": "code",
               "format": "table",
               "rawQuery": true,
-              "rawSql": "select\r\n\ta.date,\r\n\ta.daily_expense as \"Expenses\",\r\n\t-1 * b.daily_income as \"Income\",\r\n\t((-1 * a.daily_expense) / b.daily_income) as \"Ratio\"\r\nfrom hledger.average_daily_expenses a\r\njoin hledger.average_daily_income b on\r\n\ta.date = b.date and\r\n\ta.currency = b.currency\r\nwhere\r\n\ta.daily_expense is not null and\r\n\tb.daily_income is not null and\r\n\ta.currency = '${commodity}' and\r\n\ta.date between '${__from:date:YYYY-MM-DD}' and '${__to:date:YYYY-MM-DD}'\r\n",
+              "rawSql": "select\r\n\ta.date,\r\n\ta.daily_expense as \"Expenses\",\r\n\t-1 * b.daily_income as \"Income\",\r\n\t((-1 * a.daily_expense) / b.daily_income) as \"Ratio\"\r\nfrom average_daily_expenses a\r\njoin average_daily_income b on\r\n\ta.date = b.date and\r\n\ta.currency = b.currency\r\nwhere\r\n\ta.daily_expense is not null and\r\n\tb.daily_income is not null and\r\n\ta.currency = '${commodity}' and\r\n\ta.date between '${__from:date:YYYY-MM-DD}' and '${__to:date:YYYY-MM-DD}'\r\n",
               "refId": "A",
               "sql": {
                 "columns": [
@@ -2072,8 +2072,8 @@
         },
         {
           "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "pgds"
+            "type": "grafana-sqlite-datasource",
+            "uid": "sqlite-ds"
           },
           "description": "The savings ratio is a measure of the proportion of an individual's income that is saved rather than spent on consumption. It is expressed as a percentage and indicates the financial health and stability of an individual.",
           "fieldConfig": {
@@ -2223,13 +2223,13 @@
           "targets": [
             {
               "datasource": {
-                "type": "grafana-postgresql-datasource",
-                "uid": "pgds"
+                "type": "grafana-sqlite-datasource",
+                "uid": "sqlite-ds"
               },
               "editorMode": "code",
               "format": "table",
               "rawQuery": true,
-              "rawSql": "select\r\n\ta.date,\r\n\tsum(a.daily_savings) as \"Savings\",\r\n\tsum(-1 * b.daily_income) as \"Income\",\r\n\t-1 * sum(a.daily_savings / b.daily_income) as \"Ratio\"\r\nfrom hledger.average_daily_savings a\r\njoin hledger.average_daily_income b on\r\n\ta.date = b.date and\r\n\ta.currency = b.currency\r\nwhere\r\n\ta.daily_savings is not null and\r\n\tb.daily_income is not null and\r\n\ta.currency = '${commodity}' and\r\n\ta.date between '${__from:date:YYYY-MM-DD}' and '${__to:date:YYYY-MM-DD}'\r\ngroup by\r\n\ta.date\r\n",
+              "rawSql": "select\r\n\ta.date,\r\n\tsum(a.daily_savings) as \"Savings\",\r\n\tsum(-1 * b.daily_income) as \"Income\",\r\n\t-1 * sum(a.daily_savings / b.daily_income) as \"Ratio\"\r\nfrom average_daily_savings a\r\njoin average_daily_income b on\r\n\ta.date = b.date and\r\n\ta.currency = b.currency\r\nwhere\r\n\ta.daily_savings is not null and\r\n\tb.daily_income is not null and\r\n\ta.currency = '${commodity}' and\r\n\ta.date between '${__from:date:YYYY-MM-DD}' and '${__to:date:YYYY-MM-DD}'\r\ngroup by\r\n\ta.date\r\n",
               "refId": "A",
               "sql": {
                 "columns": [
@@ -2269,8 +2269,8 @@
       "panels": [
         {
           "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "pgds"
+            "type": "grafana-sqlite-datasource",
+            "uid": "sqlite-ds"
           },
           "fieldConfig": {
             "defaults": {
@@ -2352,13 +2352,13 @@
           "targets": [
             {
               "datasource": {
-                "type": "grafana-postgresql-datasource",
-                "uid": "pgds"
+                "type": "grafana-sqlite-datasource",
+                "uid": "sqlite-ds"
               },
               "editorMode": "code",
               "format": "table",
               "rawQuery": true,
-              "rawSql": "select\r\n\ta.date,\r\n\tsum(balance) as \"Retirement\"\r\nfrom hledger.balance_to_date_converted a\r\njoin hledger.assets_classification b on\r\n\ta.account = b.account\r\nwhere\r\n\ta.currency = '${commodity}' and\r\n\tb.classification = 'Retirement' \r\ngroup by\r\n\ta.date\r\norder by\r\n\tdate desc\r\n",
+              "rawSql": "select\r\n\ta.date,\r\n\tsum(balance) as \"Retirement\"\r\nfrom balance_to_date_converted a\r\njoin assets_classification b on\r\n\ta.account = b.account\r\nwhere\r\n\ta.currency = '${commodity}' and\r\n\tb.classification = 'Retirement' \r\ngroup by\r\n\ta.date\r\norder by\r\n\tdate desc\r\n",
               "refId": "A",
               "sql": {
                 "columns": [
@@ -2384,8 +2384,8 @@
         },
         {
           "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "pgds"
+            "type": "grafana-sqlite-datasource",
+            "uid": "sqlite-ds"
           },
           "fieldConfig": {
             "defaults": {
@@ -2486,13 +2486,13 @@
           "targets": [
             {
               "datasource": {
-                "type": "grafana-postgresql-datasource",
-                "uid": "pgds"
+                "type": "grafana-sqlite-datasource",
+                "uid": "sqlite-ds"
               },
               "editorMode": "code",
               "format": "table",
               "rawQuery": true,
-              "rawSql": "select\r\n\ta.date,\r\n\t-1 * sum(case when a.account = 'Income' then a.balance else 0 end) over (order by a.date) as \"Income\",\r\n\tsum(case when a.account != 'Income' then a.balance else 0 end) over (order by a.date) as \"Retirement\",\r\n\tsum(case when a.account != 'Income' then a.balance else 0 end) over (order by a.date) / \r\n\t(-1 * sum(case when a.account = 'Income' then a.balance else 0 end) over (order by a.date)) as \"Ratio\"\r\nfrom hledger.daily_delta_converted a\r\nleft join hledger.assets_classification b on\r\n\ta.account = b.account\r\nwhere\r\n\t$__timeFilter(a.date) and\r\n\t(\r\n\t\ta.account ='Income' or\r\n\t\tb.classification = 'Retirement'\r\n\t) and\r\n\ta.currency = '${commodity}'\r\norder by\r\n\ta.date",
+              "rawSql": "select\r\n\ta.date,\r\n\t-1 * sum(case when a.account = 'Income' then a.balance else 0 end) over (order by a.date) as \"Income\",\r\n\tsum(case when a.account != 'Income' then a.balance else 0 end) over (order by a.date) as \"Retirement\",\r\n\tsum(case when a.account != 'Income' then a.balance else 0 end) over (order by a.date) / \r\n\t(-1 * sum(case when a.account = 'Income' then a.balance else 0 end) over (order by a.date)) as \"Ratio\"\r\nfrom daily_delta_converted a\r\nleft join assets_classification b on\r\n\ta.account = b.account\r\nwhere\r\n\t$__timeFilter(a.date) and\r\n\t(\r\n\t\ta.account ='Income' or\r\n\t\tb.classification = 'Retirement'\r\n\t) and\r\n\ta.currency = '${commodity}'\r\norder by\r\n\ta.date",
               "refId": "A",
               "sql": {
                 "columns": [
@@ -2533,17 +2533,17 @@
           "value": "USD"
         },
         "datasource": {
-          "type": "grafana-postgresql-datasource",
-          "uid": "pgds"
+          "type": "grafana-sqlite-datasource",
+          "uid": "sqlite-ds"
         },
-        "definition": "select currency from hledger.main_commodities",
+        "definition": "select currency from main_commodities",
         "hide": 0,
         "includeAll": false,
         "label": "Default Commodity",
         "multi": false,
         "name": "commodity",
         "options": [],
-        "query": "select currency from hledger.main_commodities",
+        "query": "select currency from main_commodities",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,

@@ -1,47 +1,67 @@
 from decimal import Decimal
-from configparser import ConfigParser
-import psycopg2
-from psycopg2.extras import execute_values
+import sqlite3
+import os
+import csv
 
-BASE_DIR = './secrets/'
-DB_SCHEMA = 'hledger'
-
-
-def load_config(
-        filename=f'{BASE_DIR}database.ini',
-        section='postgresql') -> dict[str, str]:
-    """ Reads config info and return a dictionary with the values """
-    parser = ConfigParser()
-    parser.read(filename)
-
-    if parser.has_section(section):
-        params = parser.items(section)
-
-        return { param[0]: param[1] for param in params }
-    else:
-        raise Exception(
-            'Section {0} not found in the {1} file'
-            .format(section, filename))
+DUMP_FILE = 'hledger-dump.db'
 
 
-def connect(config, schema: str):
-    """ Create a PostgreSQL connection """
-    try:
-        with psycopg2.connect(
-                options=f'-c search_path={schema}',
-                **config) as conn:
-            return conn
-    except (psycopg2.DatabaseError, Exception) as error:
-        print(error)
+def adapt_decimal_real(val: Decimal):
+    return float(val)
 
 
-def create_connection(schema: str):
-    return connect(load_config(), schema)
+def init_db(conn):
+    # tables:
+    with open('sqlite/2-tables.sql', 'r') as sql:
+        conn.executescript(sql.read())
+
+    # views:
+    with open('sqlite/3-views.sql', 'r') as sql:
+        conn.executescript(sql.read())
+
+    # XXX: TODO: add these files to the main export? so that they are
+    #  loaded every time the script is run?
+    # data:
+    ASSETS = 'sqlite/csv/assets_classification.csv'
+    with open(ASSETS, 'r') as csv_file:
+        csv_reader = csv.reader(csv_file)
+        next(csv_reader)  # Read the header row
+
+        for row in csv_reader:
+            conn.execute('''
+                INSERT INTO assets_classification (account, classification)
+                VALUES (?, ?)
+            ''', row)
+
+    COMMODITIES = 'sqlite/csv/main_commodities.csv'
+    with open(COMMODITIES, 'r') as csv_file:
+        csv_reader = csv.reader(csv_file)
+        next(csv_reader)  # Read the header row
+
+        for row in csv_reader:
+            conn.execute('''
+                INSERT INTO main_commodities (currency, name)
+                VALUES (?, ?)
+            ''', row)
+
+    # indexes:
+    with open('sqlite/5-indexes.sql', 'r') as sql:
+        conn.executescript(sql.read())
+
+
+def create_connection():
+    new_db = not os.path.isfile(DUMP_FILE)
+    conn = sqlite3.connect(DUMP_FILE)
+
+    if new_db:
+        init_db(conn)
+
+    return conn
 
 
 class Connection:
-    def __init__(self, schema: str = DB_SCHEMA):
-        self.conn = create_connection(schema)
+    def __init__(self):
+        self.conn = create_connection()
         self.cursor = self.conn.cursor()
 
     def __enter__(self):
@@ -51,21 +71,24 @@ class Connection:
         self.conn.commit()
 
     def delete_table_from_date(self, table: str, date: str = None) -> None:
-        if date is None:
-            sql = f'truncate table {table}'
-        else:
-            sql = f"delete from {table} where date >= '{date}'"
+        sql = f'delete from {table}'
+
+        if date is not None:
+            sql += f" where date >= '{date}'"
 
         self.cursor.execute(sql)
 
     def bulk_insert(self, table, fields, params):
+        placeholders = "?, " * len(fields)
+        placeholders = placeholders[:-2]
+
         sql = (
             f'insert into {table} '
             f'({", ".join(fields)}) '
             f'values '
-            f'%s')
+            f'({placeholders})')
 
-        execute_values(self.cursor, sql, params)
+        self.conn.executemany(sql, params)
 
     def add_balances(
             self,
@@ -132,3 +155,6 @@ class Connection:
 
         self.delete_table_from_date(table, date)
         self.bulk_insert(table, fields, params)
+
+
+sqlite3.register_adapter(Decimal, adapt_decimal_real)
