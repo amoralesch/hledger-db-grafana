@@ -16,10 +16,17 @@ parser.add_argument(
     nargs='?',
     help='begin date',
     required=False)
+parser.add_argument(
+    '-d',
+    '--depth',
+    nargs='?',
+    help='depth level',
+    required=False)
 args = parser.parse_args()
 
 ledger_file = args.file
 start_date = args.begin
+depth_level = args.depth
 
 balance_to_date.run_process(file=ledger_file, date=start_date)
 daily_deltas.run_process(file=ledger_file, date=start_date)
