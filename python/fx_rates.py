@@ -207,9 +207,8 @@ def calculate_fx_rates(
 
 def run_process(
         hledger: Hledger,
-        file: str = None,
         date: str = None) -> None:
-    raw_prices = hledger.prices(file=file)
+    raw_prices = hledger.prices()
     rates = calculate_fx_rates(hledger, date, raw_prices)
 
     with Connection() as connection:

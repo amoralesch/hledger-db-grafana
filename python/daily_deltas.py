@@ -78,19 +78,17 @@ def calculate_deltas(
 
 def get_credit_debits(
         hledger: Hledger,
-        file: str = None,
         date: str = None
         ) -> dict[str, dict[tuple[str, str], tuple[Decimal, Decimal]]]:
-    postings = hledger.raw_postings(file=file, date=date)
+    postings = hledger.raw_postings(date=date)
 
     return preprocess_group_credits_debits(postings)
 
 
 def run_process(
         hledger: Hledger,
-        file: str = None,
         date: str = None) -> None:
-    credits_debits = get_credit_debits(hledger, file, date)
+    credits_debits = get_credit_debits(hledger, date)
     all_deltas = calculate_deltas(credits_debits)
 
     with Connection() as connection:

@@ -4,30 +4,40 @@ import subprocess
 
 
 class Hledger():
-    def hledger_command(self, args, file: str = None):
+    def __init__(self, file: str=None, depth: str=None):
+        self.file = file
+        self.depth = depth
+
+    def __get_default_arguments(self):
+        args = ["hledger"]
+
+        if self.file is not None:
+            args.extend(['-f', self.file])
+
+        if self.depth is not None:
+            args.extend(['--depth', self.depth])
+
+        return args
+
+    def hledger_command(self, args):
         """
         Run a hledger command, throw an error if it fails,
         and return the stdout
         """
         print(f'Running hledger command: {args[0]}')
 
-        real_args = ["hledger"]
+        real_args = self.__get_default_arguments()
         real_args.extend(args)
-
-        if file is not None:
-            real_args.extend(['-f', file])
 
         proc = subprocess.run(real_args, check=True, capture_output=True)
 
         return proc.stdout.decode("utf-8")
 
-
-    def prices(self, file: str = None) -> list[str]:
+    def prices(self) -> list[str]:
         """ Return the list of prices, both implicit and explicit. """
         args = ["prices", '--infer-market-prices']
 
-        return self.hledger_command(args, file).splitlines()
-
+        return self.hledger_command(args).splitlines()
 
     def current_commodites(self) -> list[str]:
         """
@@ -49,10 +59,8 @@ class Hledger():
 
         return set(commodities)
 
-
     def raw_postings(
             self,
-            file: str = None,
             date: str = None) -> list[dict[str, str]]:
         # [
         #   {
@@ -66,4 +74,4 @@ class Hledger():
         if date is not None:
             args.extend(['-b', date])
 
-        return list(csv.DictReader(io.StringIO(self.hledger_command(args, file))))
+        return list(csv.DictReader(io.StringIO(self.hledger_command(args))))
