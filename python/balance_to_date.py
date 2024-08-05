@@ -2,53 +2,7 @@ from decimal import Decimal
 from datetime import datetime
 from utils.connection import Connection
 from utils.hledger import Hledger
-from utils.utils import filter_dates, date_range
-
-
-def preprocess_group_credits_debits(
-        postings: list[dict[str, str]]
-        ) -> dict[str, dict[tuple[str, str], tuple[Decimal, Decimal]]]:
-    """
-    Group postings by date and work out the total debit / credit for
-    each account.
-
-    Postings are applied to an account and all of its superaccounts.
-    """
-    # postings = [
-    #   {
-    #     'field_name': 'value',
-    #     ...
-    #   }
-    # ]
-
-    # credits_debits_by_date = {
-    #   date: {
-    #     (account, currency): (credit, debit)
-    #   }
-    # }
-    credits_debits_by_date = {}
-
-    for posting in postings:
-        currency = posting["commodity"]
-        credit = Decimal(posting["credit"] or "0")
-        debit = Decimal(posting["debit"] or "0")
-
-        credits_debits = credits_debits_by_date.get(posting["date"], {})
-        account = None
-
-        for segment in posting["account"].split(":"):
-            if account is None:
-                account = segment
-            else:
-                account = f"{account}:{segment}"
-
-            k = (account, currency)
-            old = credits_debits.get(k, (0, 0))
-            credits_debits[k] = (old[0] + credit, old[1] + debit)
-
-        credits_debits_by_date[posting["date"]] = credits_debits
-
-    return credits_debits_by_date
+from utils.utils import filter_dates, date_range, preprocess_group_credits_debits
 
 
 def running_totals(
@@ -121,17 +75,19 @@ def calculate_balances(
 
 
 def get_credit_debits(
-        hledger: Hledger
+        hledger: Hledger,
+        depth: int
         ) -> dict[str, dict[tuple[str, str], tuple[Decimal, Decimal]]]:
     postings = hledger.raw_postings()
 
-    return preprocess_group_credits_debits(postings)
+    return preprocess_group_credits_debits(postings, depth)
 
 
 def run_process(
         hledger: Hledger,
-        date: str = None) -> None:
-    credits_debits = get_credit_debits(hledger)
+        date: str = None,
+        depth: int = None) -> None:
+    credits_debits = get_credit_debits(hledger, depth)
     all_balances = calculate_balances(credits_debits)
     filter_dates(date, all_balances)
 

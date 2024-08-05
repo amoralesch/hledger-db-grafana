@@ -4,20 +4,8 @@ import subprocess
 
 
 class Hledger():
-    def __init__(self, file: str=None, depth: str=None):
+    def __init__(self, file: str=None):
         self.file = file
-        self.depth = depth
-
-    def __get_default_arguments(self):
-        args = ["hledger"]
-
-        if self.file is not None:
-            args.extend(['-f', self.file])
-
-        if self.depth is not None:
-            args.extend(['--depth', self.depth])
-
-        return args
 
     def hledger_command(self, args):
         """
@@ -26,7 +14,11 @@ class Hledger():
         """
         print(f'Running hledger command: {args[0]}')
 
-        real_args = self.__get_default_arguments()
+        real_args = ["hledger"]
+
+        if self.file is not None:
+            real_args.extend(['-f', self.file])
+
         real_args.extend(args)
 
         proc = subprocess.run(real_args, check=True, capture_output=True)
