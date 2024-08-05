@@ -66,14 +66,16 @@ Modify the following _python_ scripts:
     * pgAdmin, running on port 5050, used for testing SQL queries;
     * Grafana, running on port 3000.
 4. Execute the script `./shell/export.sh`.
-    * The script uses hledger internal logic to read the information.
-    * Taken from the [manual](https://hledger.org/dev/hledger.html#input):
-      hledger looks for `.hledger.journal` in your home directory, or the
-      `LEDGER_FILE` environment variable.
-    * If you want to specify a different journal file, use the `-f` flag
-      like: `./shell/export.sh -f {ledger_file}`.
-    * If you only want to load information _after_ certain date, use the
-      `-b` flag like: `./shell/export.sh -b 2024`.
+    * By default, the script uses hledger
+      [internal logic](https://hledger.org/dev/hledger.html#input) to find
+      the main journal file to load, it loads information for all times,
+      and for all levels of accounts (sub-accounts).
+    * The following is the list of optional parameters to the export
+      script:
+        * `-f ledger.file`: specify a different journal.
+        * `-b yyyy-MM-DD`: re-create information _after_ `yyyy-MM-DD`
+          (inclusive).
+        * `-d #`: limit the level of sub-accounts to load.
 5. Once this is done, open browser pointing to `http://localhost:3000/`.
 6. There should be a dashboard created named _Main Overview_, open it and
    all the panel should display your information.
