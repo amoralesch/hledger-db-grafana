@@ -29,8 +29,8 @@ ledger_file = args.file
 start_date = args.begin
 depth_level = args.depth
 
-hledger = Hledger()
+hledger = Hledger(file=ledger_file)
 
-balance_to_date.run_process(hledger, file=ledger_file, date=start_date)
-daily_deltas.run_process(hledger, file=ledger_file, date=start_date)
-fx_rates.run_process(hledger, file=ledger_file, date=start_date)
+balance_to_date.run_process(hledger, date=start_date)
+daily_deltas.run_process(hledger, date=start_date)
+fx_rates.run_process(hledger, date=start_date)

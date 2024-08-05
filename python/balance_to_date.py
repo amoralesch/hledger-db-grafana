@@ -121,19 +121,17 @@ def calculate_balances(
 
 
 def get_credit_debits(
-        hledger: Hledger,
-        file: str = None
+        hledger: Hledger
         ) -> dict[str, dict[tuple[str, str], tuple[Decimal, Decimal]]]:
-    postings = hledger.raw_postings(file=file)
+    postings = hledger.raw_postings()
 
     return preprocess_group_credits_debits(postings)
 
 
 def run_process(
         hledger: Hledger,
-        file: str = None,
         date: str = None) -> None:
-    credits_debits = get_credit_debits(hledger, file=file)
+    credits_debits = get_credit_debits(hledger)
     all_balances = calculate_balances(credits_debits)
     filter_dates(date, all_balances)
 
