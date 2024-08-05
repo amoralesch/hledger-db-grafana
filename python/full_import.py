@@ -27,10 +27,14 @@ args = parser.parse_args()
 
 ledger_file = args.file
 start_date = args.begin
-depth_level = args.depth
+depth_level_str = args.depth
+depth_level = None
+
+if depth_level_str is not None:
+    depth_level = int(depth_level_str)
 
 hledger = Hledger(file=ledger_file)
 
-balance_to_date.run_process(hledger, date=start_date)
-daily_deltas.run_process(hledger, date=start_date)
+balance_to_date.run_process(hledger, date=start_date, depth=depth_level)
+daily_deltas.run_process(hledger, date=start_date, depth=depth_level)
 fx_rates.run_process(hledger, date=start_date)
