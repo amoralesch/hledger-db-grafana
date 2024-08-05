@@ -5,6 +5,7 @@ import csv
 
 DUMP_FILE = 'hledger-dump.db'
 
+
 def adapt_decimal_real(val: Decimal):
     return float(val)
 
@@ -19,7 +20,7 @@ def init_db(conn):
         conn.executescript(sql.read())
 
     # XXX: TODO: add these files to the main export? so that they are
-    #  loaded everytime the script is run?
+    #  loaded every time the script is run?
     # data:
     ASSETS = 'sqlite/csv/assets_classification.csv'
     with open(ASSETS, 'r') as csv_file:
