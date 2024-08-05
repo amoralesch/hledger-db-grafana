@@ -5,13 +5,7 @@ select
     (
         sum(a.balance * b.rate) -
         LAG(sum(a.balance * b.rate), 365) OVER (PARTITION BY a.account, b.target_currency ORDER BY a.date)
-    ) /
-    (
-        EXTRACT(epoch FROM
-            a.date -
-            LAG(a.date, 365) OVER (PARTITION BY a.account, b.target_currency ORDER BY a.date)
-        ) / 86400
-    ) as daily_expense
+    ) / 365 as daily_expense
 from hledger.balance_to_date a
 join hledger.fx_rate b on
     a.date = b.date and
@@ -32,13 +26,7 @@ select
     (
         sum(a.balance * b.rate) -
         LAG(sum(a.balance * b.rate), 365) OVER (PARTITION BY a.account, b.target_currency ORDER BY a.date)
-    ) /
-    (
-        EXTRACT(epoch FROM
-            a.date -
-            LAG(a.date, 365) OVER (PARTITION BY a.account, b.target_currency ORDER BY a.date)
-        ) / 86400
-    ) as daily_income
+    ) / 365 as daily_income
 from hledger.balance_to_date a
 join hledger.fx_rate b on
     a.date = b.date and
@@ -59,13 +47,7 @@ select
     (
         sum(a.balance * b.rate) -
         LAG(sum(a.balance * b.rate), 365) OVER (PARTITION BY a.account, b.target_currency ORDER BY a.date)
-    ) /
-    (
-        EXTRACT(epoch FROM
-            a.date -
-            LAG(a.date, 365) OVER (PARTITION BY a.account, b.target_currency ORDER BY a.date)
-        ) / 86400
-    ) as daily_savings
+    ) / 365 as daily_savings
 from hledger.balance_to_date a
 join hledger.fx_rate b on
     a.date = b.date and

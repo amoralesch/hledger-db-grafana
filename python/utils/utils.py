@@ -1,4 +1,5 @@
 from datetime import timedelta, date
+from decimal import Decimal
 
 
 def date_range(start: date, end: date, step=timedelta(1)):
@@ -29,3 +30,54 @@ def filter_dates(
     for x in keys:
         del some_list[x]
 
+def preprocess_group_credits_debits(
+        postings: list[dict[str, str]],
+        max_depth: int
+        ) -> dict[str, dict[tuple[str, str], tuple[Decimal, Decimal]]]:
+    """
+    Group postings by date and work out the total debit / credit for
+    each account.
+
+    Postings are applied to an account and all of its superaccounts.
+    """
+    # postings = [
+    #   {
+    #     'field_name': 'value',
+    #     ...
+    #   }
+    # ]
+
+    # credits_debits_by_date = {
+    #   date: {
+    #     (account, currency): (credit, debit)
+    #   }
+    # }
+    credits_debits_by_date = {}
+
+    for posting in postings:
+        currency = posting["commodity"]
+        credit = Decimal(posting["credit"] or "0")
+        debit = Decimal(posting["debit"] or "0")
+
+        credits_debits = credits_debits_by_date.get(posting["date"], {})
+        account = None
+        this_depth = 1
+
+        for segment in posting["account"].split(":"):
+            if account is None:
+                account = segment
+                this_depth = 1
+            else:
+                account = f"{account}:{segment}"
+                this_depth += 1
+
+            if max_depth is not None and this_depth > max_depth:
+                break
+
+            k = (account, currency)
+            old = credits_debits.get(k, (0, 0))
+            credits_debits[k] = (old[0] + credit, old[1] + debit)
+
+        credits_debits_by_date[posting["date"]] = credits_debits
+
+    return credits_debits_by_date

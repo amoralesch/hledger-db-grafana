@@ -2,7 +2,7 @@ import copy
 from decimal import Decimal
 from datetime import datetime
 from utils.connection import Connection
-from utils.hledger import prices, current_commodites
+from utils.hledger import Hledger
 from utils.utils import date_range
 
 DATE_FAR_FUTURE = '9999-12-31'
@@ -130,6 +130,7 @@ def calculate_last_day_for_currencies(
 
 
 def find_last_day_currencies(
+        hledger: Hledger,
         explicit_rates: dict[str, dict[tuple[str, str], Decimal]]
         ) -> dict[str, str]:
     # explicit_rates = {
@@ -140,7 +141,7 @@ def find_last_day_currencies(
 
     current_commodities = {
         item: DATE_FAR_FUTURE
-        for item in current_commodites()
+        for item in hledger.current_commodites()
     }
     return calculate_last_day_for_currencies(explicit_rates) | current_commodities
 
@@ -192,11 +193,12 @@ def generate_implicit_rates(
 
 
 def calculate_fx_rates(
+        hledger: Hledger,
         date: str,
         raw_prices: list[str]
         ) -> dict[str, dict[tuple[str, str], Decimal]]:
     explicit_rates = extract_from_hledger(raw_prices)
-    last_day_currencies = find_last_day_currencies(explicit_rates)
+    last_day_currencies = find_last_day_currencies(hledger, explicit_rates)
     projected_rates = project_rates(date, explicit_rates, last_day_currencies)
     rates = generate_implicit_rates(projected_rates)
 
@@ -204,15 +206,14 @@ def calculate_fx_rates(
 
 
 def run_process(
-        file: str = None,
+        hledger: Hledger,
         date: str = None) -> None:
-    raw_prices = prices(file=file)
-    rates = calculate_fx_rates(date, raw_prices)
+    raw_prices = hledger.prices()
+    rates = calculate_fx_rates(hledger, date, raw_prices)
 
     with Connection() as connection:
         connection.add_fx_rates(date, rates)
 
 
 if __name__ == '__main__':
-    run_process()
-    # run_process(date="2024-01-01")
+    run_process(Hledger())
