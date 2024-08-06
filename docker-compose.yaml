@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres
+    image: postgres:16.3
     restart: unless-stopped
     ports:
       - "5432:5432"
@@ -14,7 +14,7 @@ services:
       - postgres-data:/var/lib/postgresql/data
       - ./postgres:/docker-entrypoint-initdb.d/
   pgAdmin:
-    image: dpage/pgadmin4
+    image: dpage/pgadmin4:8.10
     ports:
       - "5050:80"
     depends_on:
@@ -27,7 +27,7 @@ services:
     volumes:
       - pgAdmin-data:/var/lib/pgadmin
   grafana:
-    image: grafana/grafana
+    image: grafana/grafana:11.1.2
     restart: unless-stopped
     depends_on:
       - postgres
