@@ -84,6 +84,55 @@ Modify the following _python_ scripts:
       the volumes created, but if you do this, when you start the
       containers again, you will need to re-run the export file.
 
+## Screenshots
+
+After the export is done, Grafana will present one dashboard with some
+basic reports, below are a small explanation of each section
+
+### Summary
+
+![Summary Screenshot](assets/summary.png "Summary section")
+
+Gives you a quick look of your finances, it includes things like:
+
+* Net Worth
+* Short and Long Runaway
+* FIRE number
+* Daily averages for income and expenses
+* Your expected wealth, depending on your age
+* Total balance for your asset classification
+
+### Assets
+
+![Assets Screenshot](assets/assets.png "Assets section")
+
+Allows you to see a more detailed view of your assets, including graphs
+for:
+
+* How your assets have move over time?
+* Multiple ways to see the allocation of your assets
+
+### Ratios
+
+![Ratios Screenshot](assets/ratios.png "Ratios section")
+
+See the ratios between some of your accounts, and quickly see if you are
+on what others consider a "good ratio".
+
+* Debt-to-Income ratio
+* Debt-to-Net Worth ratio
+* Debt-to-Assets ratio
+* Cash Flow ratio
+* Savings ratio
+
+### Retirement
+
+![Retirement Screenshot](assets/retirement.png "Retirement section")
+
+Gives you an idea if you are preparing for retirement, see how much the
+balance has grow, and the ratio of your income that ends up in your
+retirement accounts.
+
 ## Further Configuration
 
 The following are optional configuration that can be done to adjust the
