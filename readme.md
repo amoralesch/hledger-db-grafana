@@ -95,11 +95,14 @@ basic reports, below are a small explanation of each section
 
 Gives you a quick look of your finances, it includes things like:
 
-* Net Worth
-* Short and Long Runaway
-* FIRE number
+* [Net Worth](https://www.investopedia.com/terms/n/networth.asp)
+* Short and Long Runaway: How many days I could survive with my current
+  assets with no income.
+* [FIRE number](https://www.investopedia.com/terms/f/financial-independence-retire-early-fire.asp)
 * Daily averages for income and expenses
-* Your expected wealth, depending on your age
+* [Credit Utilization ratio](https://www.investopedia.com/terms/c/credit-utilization-rate.asp)
+* Your [expected wealth](https://themillionairenextdoor.com/2010/08/how-wealthy-should-you-be/),
+  depending on your age
 * Total balance for your asset classification
 
 ### Assets
@@ -119,11 +122,11 @@ for:
 See the ratios between some of your accounts, and quickly see if you are
 on what others consider a "good ratio".
 
-* Debt-to-Income ratio
-* Debt-to-Net Worth ratio
-* Debt-to-Assets ratio
-* Cash Flow ratio
-* Savings ratio
+* [Debt-to-Income ratio](https://www.investopedia.com/terms/d/dti.asp)
+* [Debt-to-Net Worth ratio](https://www.fool.com/knowledge-center/the-debt-to-net-worth-formula.aspx)
+* [Debt-to-Assets ratio](https://www.investopedia.com/terms/t/totaldebttototalassets.asp)
+* [Cash Flow ratio](https://www.investopedia.com/terms/c/cashflow.asp)
+* [Savings ratio](https://www.investopedia.com/terms/s/savings-rate.asp)
 
 ### Retirement
 
