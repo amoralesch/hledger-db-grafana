@@ -44,6 +44,7 @@ services:
       GF_ANALYTICS_CHECK_FOR_UPDATES: false
       GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES: false
       GF_ANALYTICS_FEEDBACK_LINKS_ENABLED: false
+      GF_NEWS_NEWS_FEED_ENABLED: false
 
 volumes:
   postgres-data:
