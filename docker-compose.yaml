@@ -3,7 +3,7 @@ services:
     image: postgres:16.3
     restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     secrets:
       - postgres-password
     environment:
@@ -16,7 +16,7 @@ services:
   pgAdmin:
     image: dpage/pgadmin4:8.10
     ports:
-      - "5050:80"
+      - "127.0.0.1:5050:80"
     depends_on:
       - postgres
     secrets:
@@ -32,13 +32,18 @@ services:
     depends_on:
       - postgres
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning
       - ./grafana/dashboards:/var/lib/grafana/dashboards
       - grafana-data:/var/lib/grafana
     environment:
       GF_INSTALL_PLUGINS: marcusolsson-treemap-panel
+      GF_ANALYTICS_ENABLED: false
+      GF_ANALYTICS_REPORTING_ENABLED: false
+      GF_ANALYTICS_CHECK_FOR_UPDATES: false
+      GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES: false
+      GF_ANALYTICS_FEEDBACK_LINKS_ENABLED: false
 
 volumes:
   postgres-data:
