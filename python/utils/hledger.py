@@ -1,6 +1,8 @@
 import csv
 import io
 import subprocess
+import re
+from decimal import Decimal, InvalidOperation
 
 
 class Hledger():
@@ -40,14 +42,16 @@ class Hledger():
 
         for line in lines:
             line = line.strip()
-            if '"' not in line:
+            fields = [p for p in re.split("( |\\\".*?\\\"|'.*?')", line) if p.strip()]
+
+            try:
                 # -1,234.56 USD  Assets
-                commodities.append(line.split(' ')[1])
-            else:
-                # -1,234.56 "USD *"  Assets
-                start = line.index('"') + 1
-                end = line.index('"', start)
-                commodities.append(line[start:end])
+                Decimal(fields[0].replace(',', ''))
+
+                commodities.append(fields[1].replace('"', ''))
+            except InvalidOperation:
+                # USD -1,234.56  Assets
+                commodities.append(fields[0].replace('"', ''))
 
         return set(commodities)
 

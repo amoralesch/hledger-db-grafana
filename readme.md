@@ -26,8 +26,6 @@ You are familiar with:
 * Have your financial journal accessible to hledger;
     * Your main categories should be _Assets_, _Liabilities_, _Income_,
       _Expenses_, and _Equity_.
-    * The format of your commodities is something like `#,###.## SYMBOL`,
-      i.e. the symbol of the commodity comes after the amount.
 
 ## Configuration
 
