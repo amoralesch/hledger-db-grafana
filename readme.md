@@ -227,3 +227,25 @@ following files:
 * `secrets/database.ini`: Used by the python script.
 * `grafana/provisioning/datasources/datasource.yml`: Used by Grafana to
   connect to the DB.
+
+### Reformat Commodities
+
+The repo includes the file `python/format_commodities.py`, which can be
+used when you want to change the format of your entries, from been
+something like `$#,###.##`, to be `#,###.## $`, i.e. move the commodity
+symbol from the beginning to the end of the line.
+
+The format doesn't matter to the export script, or to Grafana; use this
+only if you want to change it as a personal decision.
+
+Thanks to [BardenB](https://github.com/BardenB) for the original script.
+
+Use the following parameters when executing the script:
+
+* `-f file`: the file to modify. The script will only look at this file
+  without following any `imports`.
+* `-c SYMBOL`: the commodity symbol to search for and replace.
+* `-t SYMBOL`: the commodity to replace with.
+
+The script will not modify the original file, instead it will create a
+modified copy with the name `reformatted_{ORIGINAL_FILE}`.
