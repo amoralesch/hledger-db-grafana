@@ -46,15 +46,6 @@ Update the file `postgres/csv/assets_classification.csv`, to classify all
 your _Asset_ accounts; you should have at least _Cash_, _Savings_ and
 _Retirement_. See the example already included.
 
-### Python Scripts
-
-Modify the following _python_ scripts:
-
-* `fx_rates.py` -> `MAIN_CURRENCIES`
-
-  Set the same list of _main_ commodities as in the previous CSV file
-  (`postgres/csv/main_commodities.csv`)
-
 ## Installation
 
 1. Clone this repo.

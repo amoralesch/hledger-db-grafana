@@ -1,17 +1,14 @@
 import copy
+import csv
 import re
-from decimal import Decimal, InvalidOperation
 from datetime import datetime
+from decimal import Decimal, InvalidOperation
 from utils.connection import Connection
 from utils.hledger import Hledger
 from utils.utils import date_range
 
 DATE_FAR_FUTURE = '9999-12-31'
-MAIN_CURRENCIES = [
-    'USD',
-    'MXN',
-    'JPY'
-]
+MAIN_CURRENCIES_CSV = 'postgres/csv/main_commodities.csv'
 
 
 def split_price(price: str) -> tuple[str, str, str, str]:
@@ -154,6 +151,16 @@ def find_last_day_currencies(
     return calculate_last_day_for_currencies(explicit_rates) | current_commodities
 
 
+def get_main_currencies():
+    with open(MAIN_CURRENCIES_CSV, mode='r') as file:
+        reader = csv.reader(file)
+
+        # skip header
+        next(reader)
+
+        return [row[0] for row in reader]
+
+
 def generate_implicit_rates(
         all_explicit_rates: dict[str, dict[tuple[str, str], Decimal]]
         ) -> dict[str, dict[tuple[str, str], Decimal]]:
@@ -163,6 +170,7 @@ def generate_implicit_rates(
     #   }
     # }
     rates = {}
+    main_currencies = get_main_currencies()
 
     for day in sorted(all_explicit_rates.keys()):
         explicit_rates = all_explicit_rates.get(day)
@@ -183,8 +191,8 @@ def generate_implicit_rates(
                 same_currency = source_currency == target_currency
                 not_related = middle_currency != other_middle_currency
                 can_ignore = (
-                    source_currency not in MAIN_CURRENCIES and
-                    target_currency not in MAIN_CURRENCIES
+                    source_currency not in main_currencies and
+                    target_currency not in main_currencies
                 )
                 already_known = the_key in all_rates_day
 
