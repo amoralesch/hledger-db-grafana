@@ -2,7 +2,6 @@ import csv
 import io
 import subprocess
 import re
-from decimal import Decimal, InvalidOperation
 
 
 class Hledger():
@@ -37,21 +36,14 @@ class Hledger():
         """
         Return a list of commodities currently active (i.e. in use today)
         """
-        lines = self.hledger_command(['bal', '-1', '--no-total']).splitlines()
+        lines = self.hledger_command(['bal', '-1', '--no-total', '-O', 'json']).splitlines()
         commodities = []
 
         for line in lines:
-            line = line.strip()
-            fields = [p for p in re.split("( |\\\".*?\\\"|'.*?')", line) if p.strip()]
+            if 'acommodity' not in line:
+                continue
 
-            try:
-                # -1,234.56 USD  Assets
-                Decimal(fields[0].replace(',', ''))
-
-                commodities.append(fields[1].replace('"', ''))
-            except InvalidOperation:
-                # USD -1,234.56  Assets
-                commodities.append(fields[0].replace('"', ''))
+            commodities.append(re.findall('"([^"]*)"', line)[1])
 
         return set(commodities)
 
