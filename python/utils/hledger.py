@@ -1,6 +1,7 @@
 import csv
 import io
 import subprocess
+import re
 
 
 class Hledger():
@@ -35,19 +36,14 @@ class Hledger():
         """
         Return a list of commodities currently active (i.e. in use today)
         """
-        lines = self.hledger_command(['bal', '-1', '--no-total']).splitlines()
+        lines = self.hledger_command(['bal', '-1', '--no-total', '-O', 'json']).splitlines()
         commodities = []
 
         for line in lines:
-            line = line.strip()
-            if '"' not in line:
-                # -1,234.56 USD  Assets
-                commodities.append(line.split(' ')[1])
-            else:
-                # -1,234.56 "USD *"  Assets
-                start = line.index('"') + 1
-                end = line.index('"', start)
-                commodities.append(line[start:end])
+            if 'acommodity' not in line:
+                continue
+
+            commodities.append(re.findall('"([^"]*)"', line)[1])
 
         return set(commodities)
 

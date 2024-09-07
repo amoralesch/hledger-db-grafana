@@ -1,7 +1,8 @@
 import copy
 import csv
-from decimal import Decimal
+import re
 from datetime import datetime
+from decimal import Decimal, InvalidOperation
 from utils.connection import Connection
 from utils.hledger import Hledger
 from utils.utils import date_range
@@ -10,20 +11,27 @@ DATE_FAR_FUTURE = '9999-12-31'
 MAIN_CURRENCIES_CSV = 'postgres/csv/main_commodities.csv'
 
 
-def split_price(price: str) -> tuple[str, str, str, str, str]:
-    fields = price.replace('"', '').split()
+def split_price(price: str) -> tuple[str, str, str, str]:
+    # [timestamp, currency, rate, target_currency]
+    fields = [p for p in re.split("( |\\\".*?\\\"|'.*?')", price) if p.strip()]
 
-    if len(fields) == 5:
-        # P 2000-01-01 USD 1.00 USD
-        return fields
-    else:
-        # P 2000-01-01 "USD *" 2.00 USD
+    try:
+        # P 2000-01-01 USD 1,000.00 VND
+        Decimal(fields[3].replace(',', ''))
+
         return (
-            fields[0],
             fields[1],
-            fields[2] + ' ' + fields[3],
+            fields[2].replace('"', ''),
+            fields[3],
+            fields[4].replace('"', '')
+        )
+    except InvalidOperation:
+        # P 2000-01-01 USD VND 1,000.00
+        return (
+            fields[1],
+            fields[2].replace('"', ''),
             fields[4],
-            fields[5]
+            fields[3].replace('"', '')
         )
 
 
@@ -38,7 +46,7 @@ def extract_from_hledger(
     results = {}
 
     for raw_price in raw_prices:
-        _, timestamp, currency, str_rate, target_currency = split_price(raw_price)
+        timestamp, currency, str_rate, target_currency = split_price(raw_price)
         rate = Decimal(str_rate.replace(',', ''))
 
         if rate == 0:
