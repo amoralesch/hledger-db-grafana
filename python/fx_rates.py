@@ -65,8 +65,7 @@ def extract_from_hledger(
 
 def project_rates(
         limit_date: str,
-        explicit_rates: dict[str, dict[tuple[str, str], Decimal]],
-        last_day_currency: dict[str, str]
+        explicit_rates: dict[str, dict[tuple[str, str], Decimal]]
         ) -> dict[str, dict[tuple[str, str], Decimal]]:
     """
     Project rates forward if there is a gap, till today.
@@ -77,8 +76,6 @@ def project_rates(
     #     (currency, target_currency) => rate
     #   }
     # }
-    # ---
-    # last_day_currency = { currency: last_date }
 
     start_date = datetime.strptime(
         min(explicit_rates.keys()),
@@ -93,62 +90,12 @@ def project_rates(
 
         if rates_of_the_day is not None:
             for rate in rates_of_the_day:
-                date_1 = last_day_currency.get(rate[0], '1900-01-01')
-                date_2 = last_day_currency.get(rate[1], '1900-01-01')
-
-                if date <= date_1 and date <= date_2:
-                    previous_rates[rate] = rates_of_the_day[rate]
-
-        rates_to_remove = []
-        for rate in previous_rates:
-            date_1 = last_day_currency.get(rate[0], '1900-01-01')
-            date_2 = last_day_currency.get(rate[1], '1900-01-01')
-
-            if date > date_1 or date > date_2:
-                rates_to_remove.append(rate)
-
-        for rate in rates_to_remove:
-            del previous_rates[rate]
+                previous_rates[rate] = rates_of_the_day[rate]
 
         if limit_date is None or date >= limit_date:
             projected_rates[date] = copy.deepcopy(previous_rates)
 
     return projected_rates
-
-
-def calculate_last_day_for_currencies(
-        explicit_rates: dict[str, dict[tuple[str, str], Decimal]]
-        ) -> dict[str, str]:
-    # explicit_rates = {
-    #   timestamp => {
-    #     (currency, target_currency) => rate
-    #   }
-    # }
-    all_currencies = {}
-
-    for date, kvs in explicit_rates.items():
-        for currencies, _ in kvs.items():
-            all_currencies[currencies[0]] = date
-            all_currencies[currencies[1]] = date
-
-    return all_currencies
-
-
-def find_last_day_currencies(
-        hledger: Hledger,
-        explicit_rates: dict[str, dict[tuple[str, str], Decimal]]
-        ) -> dict[str, str]:
-    # explicit_rates = {
-    #   timestamp => {
-    #     (currency, target_currency) => rate
-    #   }
-    # }
-
-    current_commodities = {
-        item: DATE_FAR_FUTURE
-        for item in hledger.current_commodites()
-    }
-    return calculate_last_day_for_currencies(explicit_rates) | current_commodities
 
 
 def get_main_currencies():
@@ -209,13 +156,11 @@ def generate_implicit_rates(
 
 
 def calculate_fx_rates(
-        hledger: Hledger,
         date: str,
         raw_prices: list[str]
         ) -> dict[str, dict[tuple[str, str], Decimal]]:
     explicit_rates = extract_from_hledger(raw_prices)
-    last_day_currencies = find_last_day_currencies(hledger, explicit_rates)
-    projected_rates = project_rates(date, explicit_rates, last_day_currencies)
+    projected_rates = project_rates(date, explicit_rates)
     rates = generate_implicit_rates(projected_rates)
 
     return rates
@@ -225,7 +170,7 @@ def run_process(
         hledger: Hledger,
         date: str = None) -> None:
     raw_prices = hledger.prices()
-    rates = calculate_fx_rates(hledger, date, raw_prices)
+    rates = calculate_fx_rates(date, raw_prices)
 
     with Connection() as connection:
         connection.add_fx_rates(date, rates)

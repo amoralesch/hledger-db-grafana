@@ -28,24 +28,9 @@ class Hledger():
 
     def prices(self) -> list[str]:
         """ Return the list of prices, both implicit and explicit. """
-        args = ["prices", '--infer-market-prices']
+        args = ["prices"]
 
         return self.hledger_command(args).splitlines()
-
-    def current_commodites(self) -> list[str]:
-        """
-        Return a list of commodities currently active (i.e. in use today)
-        """
-        lines = self.hledger_command(['bal', '-1', '--no-total', '-O', 'json']).splitlines()
-        commodities = []
-
-        for line in lines:
-            if 'acommodity' not in line:
-                continue
-
-            commodities.append(re.findall('"([^"]*)"', line)[1])
-
-        return set(commodities)
 
     def raw_postings(
             self,
@@ -57,7 +42,7 @@ class Hledger():
         #   }
         # ]
 
-        args = ["print", "-O", "csv"]
+        args = ["print", "-O", "csv", '--cost']
 
         if date is not None:
             args.extend(['-b', date])
